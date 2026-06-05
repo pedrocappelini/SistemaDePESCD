@@ -1,0 +1,91 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header {
+    background-color: #003366;
+    color: white;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header button {
+    background: #cc0000;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #003366;
+}
+
+.tabela-ofertas {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.tabela-ofertas th, .tabela-ofertas td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.tabela-ofertas th {
+    background-color: #003366;
+    color: white;
+}
+
+.tabela-ofertas tr:hover {
+    background-color: #f0f4ff;
+}
+
+.alert-info {
+    padding: 16px;
+    background: #e8f0ff;
+    border: 1px solid #003366;
+    border-radius: 4px;
+    color: #003366;
+}
+
+/* Badges de status */
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.status-EM_ANDAMENTO    { background: #d4edda; color: #155724; }
+.status-CONCLUIDA       { background: #cce5ff; color: #004085; }
+.status-EM_ATRASO       { background: #f8d7da; color: #721c24; }
+.status-AGUARDANDO_ENCERRAMENTO { background: #fff3cd; color: #856404; }
+
+.status-NAO_ENVIADO              { background: #e2e3e5; color: #383d41; }
+.status-PLANO_ENVIADO            { background: #fff3cd; color: #856404; }
+.status-PLANO_APROVADO           { background: #d4edda; color: #155724; }
+.status-DOCUMENTACAO_ENVIADA     { background: #fff3cd; color: #856404; }
+.status-RELATORIO_ENVIADO        { background: #cce5ff; color: #004085; }
+.status-RELATORIO_APROVADO_SUPERVISOR { background: #d4edda; color: #155724; }
+.status-CONCLUIDO_RESPONSAVEL    { background: #d1ecf1; color: #0c5460; }
