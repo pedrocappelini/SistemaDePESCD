@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Enviar Documentação de Ensino - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - UFSCar</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+
+    <h1>Enviar Documentação de Ensino Prévio</h1>
+    <p>Utilize este formulário para enviar a documentação comprobatória de aulas ministradas no ensino superior e receber os créditos sem realizar o estágio.</p>
+
+    <div class="info-card">
+        <h3>Dados da Oferta</h3>
+        <p><strong>Oferta:</strong> <span th:text="${inscricao.oferta.nome}">Nome</span></p>
+        <p><strong>Semestre:</strong> <span th:text="${inscricao.oferta.semestre}">2026/1</span></p>
+        <p>
+            <strong>Período:</strong>
+            <span th:text="${#temporals.format(inscricao.oferta.dataInicio, 'dd/MM/yyyy')}">01/03/2026</span>
+            até
+            <span th:text="${#temporals.format(inscricao.oferta.dataFim, 'dd/MM/yyyy')}">09/07/2026</span>
+        </p>
+        <p><strong>Professor Responsável:</strong>
+            <span th:text="${inscricao.oferta.professorResponsavel.nomeCompleto}">Prof.</span>
+        </p>
+    </div>
+
+    <div th:if="${erro}" class="alert-erro" th:text="${erro}"></div>
+
+    <form th:action="@{/aluno/documentacao/enviar}" method="post"
+          enctype="multipart/form-data" class="form-card">
+
+        <input type="hidden" name="ofertaId" th:value="${inscricao.oferta.id}"/>
+
+        <div class="form-grupo">
+            <label for="instituicao">Nome da Instituição <span class="obrigatorio">*</span></label>
+            <input type="text" id="instituicao" name="instituicao"
+                   placeholder="Ex: USP, UNICAMP, FATEC..." required maxlength="255"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="nomeDisciplina">Nome da Disciplina <span class="obrigatorio">*</span></label>
+            <input type="text" id="nomeDisciplina" name="nomeDisciplina"
+                   placeholder="Ex: Banco de Dados I" required maxlength="150"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="cursoDisciplina">Curso da Disciplina <span class="obrigatorio">*</span></label>
+            <input type="text" id="cursoDisciplina" name="cursoDisciplina"
+                   placeholder="Ex: Engenharia de Software" required maxlength="150"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="cargaHoraria">Carga Horária (em horas) <span class="obrigatorio">*</span></label>
+            <input type="number" id="cargaHoraria" name="cargaHoraria"
+                   placeholder="Ex: 60" required min="1"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="arquivo">Documentação Comprobatória (PDF, máx. 5MB) <span class="obrigatorio">*</span></label>
+            <input type="file" id="arquivo" name="arquivo"
+                   accept=".pdf" required/>
+            <small>Somente arquivos .pdf com até 5MB são aceitos contendo as comprovações.</small>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn-primario">Enviar Documentação</button>
+            <a th:href="@{/aluno/ofertas}" class="btn-secundario">Cancelar</a>
+        </div>
+
+    </form>
+
+</main>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const arquivo = document.getElementById('arquivo');
+        const file = arquivo.files[0];
+
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            e.preventDefault();
+            alert('O arquivo deve ser um PDF.');
+            return;
+        }
+
+        const maxTamanho = 5 * 1024 * 1024;
+        if (file.size > maxTamanho) {
+            e.preventDefault();
+            alert('O arquivo deve ter no máximo 5MB.');
+        }
+    });
+</script>
+
+</body>
+</html>

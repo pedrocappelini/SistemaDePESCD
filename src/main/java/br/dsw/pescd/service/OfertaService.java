@@ -1,5 +1,7 @@
 package br.dsw.pescd.service;
 
+import br.dsw.pescd.domain.Documentacao;
+import br.dsw.pescd.repository.DocumentacaoRepository;
 import br.dsw.pescd.domain.*;
 import br.dsw.pescd.enums.StatusAlunoOferta;
 import br.dsw.pescd.enums.StatusOferta;
@@ -37,6 +39,9 @@ public class OfertaService {
 
     @Autowired
     private PlanoTrabalhoRepository planoTrabalhoRepository;
+
+    @Autowired
+    private DocumentacaoRepository documentacaoRepository;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -84,6 +89,64 @@ public class OfertaService {
 
         return inscricaoRepository.findByAlunoAndOferta(aluno, oferta)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição não encontrada."));
+    }
+
+    public void enviarDocumentacao (
+            String username,
+            Long ofertaId,
+            String instituicao,
+            String nomeDisciplina,
+            String cursoDisciplina,
+            Integer cargaHoraria,
+            MultipartFile arquivo) throws IOException {
+
+        Inscricao inscricao = buscarInscricao(username, ofertaId);
+
+        // PC-3: Selecionar uma oferta com status "em andamento"
+        if (inscricao.getOferta().getStatus() != StatusOferta.EM_ANDAMENTO) {
+            throw new IllegalArgumentException("A oferta não está em andamento.");
+        }
+
+        // PC-4: O status do aluno nesta oferta deve ser "não enviado"
+        if (inscricao.getStatus() != StatusAlunoOferta.NAO_ENVIADO) {
+            throw new IllegalArgumentException("Você já realizou um envio nesta oferta ou a mesma não permite novos envios.");
+        }
+
+        // Validação básica RN-1 (Campos obrigatórios)
+        if (instituicao == null || instituicao.isBlank() ||
+                nomeDisciplina == null || nomeDisciplina.isBlank() ||
+                cursoDisciplina == null || cursoDisciplina.isBlank() ||
+                cargaHoraria == null || cargaHoraria <= 0) {
+            throw new IllegalArgumentException("Todos os campos obrigatórios devem ser preenchidos corretamente.");
+        }
+
+        // RN-3: O arquivo deve ser um PDF
+        if (arquivo.isEmpty() || !isPDF(arquivo)) {
+            throw new IllegalArgumentException("O arquivo com a documentação comprobatória deve ser um PDF.");
+        }
+
+        // RN-3: O arquivo deve ter no máximo 5MB
+        long maxTamanho = 5 * 1024 * 1024;
+        if (arquivo.getSize() > maxTamanho) {
+            throw new IllegalArgumentException("O arquivo deve ter no máximo 5MB.");
+        }
+
+        // Salvar arquivo físico
+        String nomeArquivoSalvo = salvarArquivo(arquivo, "doc_ensino", inscricao.getId());
+
+        // Criar e salvar entidade com os dados (RN-1)
+        Documentacao doc = new Documentacao();
+        doc.setInstituicao(instituicao);
+        doc.setNomeDisciplina(nomeDisciplina);
+        doc.setCursoDisciplina(cursoDisciplina);
+        doc.setCargaHoraria(cargaHoraria);
+        doc.setNomeArquivo(nomeArquivoSalvo);
+        doc.setInscricao(inscricao);
+        documentacaoRepository.save(doc);
+
+        // RN-4: Envio com sucesso deve mudar o status do aluno para "documentação enviada"
+        inscricao.setStatus(StatusAlunoOferta.DOCUMENTACAO_ENVIADA);
+        inscricaoRepository.save(inscricao);
     }
 
     public void enviarPlano(

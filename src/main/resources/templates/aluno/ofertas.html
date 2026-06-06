@@ -41,13 +41,13 @@
         </thead>
         <tbody>
         <tr th:each="inscricao : ${inscricoes}">
-
             <td th:text="${inscricao.oferta.nome}">Nome da oferta</td>
             <td th:text="${inscricao.oferta.semestre}">2026/1</td>
             <td th:text="${#temporals.format(inscricao.oferta.dataInicio, 'dd/MM/yyyy')}">01/01/2026</td>
             <td th:text="${#temporals.format(inscricao.oferta.dataFim, 'dd/MM/yyyy')}">01/07/2026</td>
             <td th:text="${inscricao.oferta.professorResponsavel.nomeCompleto}">Prof.</td>
 
+            <!-- Status da oferta -->
             <td>
                 <span th:text="${inscricao.oferta.status}"
                       th:class="'badge status-' + ${inscricao.oferta.status}">
@@ -55,6 +55,7 @@
                 </span>
             </td>
 
+            <!-- Status do aluno na inscrição -->
             <td>
                 <span th:text="${inscricao.status}"
                       th:class="'badge status-' + ${inscricao.status}">
@@ -62,18 +63,24 @@
                 </span>
             </td>
 
-             <!-- Ações disponíveis conforme status -->
+            <!-- Ações -->
             <td>
-                <!-- Botão aparece só se oferta EM_ANDAMENTO e aluno NAO_ENVIADO -->
-                <a th:if="${inscricao.oferta.status.name() == 'EM_ANDAMENTO'
-                           and inscricao.status.name() == 'NAO_ENVIADO'}"
-                   th:href="@{/aluno/plano/enviar(ofertaId=${inscricao.oferta.id})}"
-                   class="btn-primario">
-                    Enviar Plano
-                </a>
-                <span th:if="${inscricao.status.name() != 'NAO_ENVIADO'}">—</span>
+                <div th:if="${inscricao.oferta.status.name() == 'EM_ANDAMENTO'
+                              and inscricao.status.name() == 'NAO_ENVIADO'}">
+                    <a th:href="@{/aluno/plano/enviar(ofertaId=${inscricao.oferta.id})}"
+                       class="btn-primario"
+                       style="display: inline-block; margin-right: 8px; font-size: 0.85rem; padding: 6px 12px;">
+                        Enviar Plano
+                    </a>
+                    <a th:href="@{/aluno/documentacao/enviar(ofertaId=${inscricao.oferta.id})}"
+                       class="btn-secundario"
+                       style="display: inline-block; font-size: 0.85rem; padding: 6px 12px;">
+                        Enviar Documentação
+                    </a>
+                </div>
+                <span th:unless="${inscricao.oferta.status.name() == 'EM_ANDAMENTO'
+                                 and inscricao.status.name() == 'NAO_ENVIADO'}">—</span>
             </td>
-
         </tr>
         </tbody>
     </table>
