@@ -19,10 +19,12 @@ public class PescdApplication {
         SpringApplication.run(PescdApplication.class, args);
     }
 
-    //para testar o funcionamento do banco de dados
+    // Inicialização de dados para testar o funcionamento do banco de dados e as estórias implementadas
     @Bean
     public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo) {
         return args -> {
+            // --- 1. CADASTRO DE USUÁRIOS BASE ---
+
             Secretario sec = new Secretario();
             sec.setNomeCompleto("Secretario Lucas");
             sec.setEmail("lucas@ufscar.br");
@@ -30,39 +32,12 @@ public class PescdApplication {
             sec.setSenha("lucas678");
             usuarioRepo.save(sec);
 
-            Professor prof = new Professor();
-            prof.setNomeCompleto("Professor Luis");
-            prof.setEmail("Luis@ufscar.br");
-            prof.setUsername("luis.prof");
-            prof.setSenha("luis98765");
-            usuarioRepo.save(prof);
-
-            Oferta oferta = new Oferta();
-            oferta.setNome("Desenvolvimento de Software para Web 1");
-            oferta.setSemestre("2026/1");
-            oferta.setDataInicio(LocalDate.of(2026, 3, 1));
-            oferta.setDataFim(LocalDate.of(2026, 7, 9));
-            oferta.setStatus(StatusOferta.EM_ANDAMENTO);
-            oferta.setProfessorResponsavel(prof);
-            oferta.setCriadoPor(sec);
-            oferta.setDataHoraCriacao(LocalDateTime.now());
-            ofertaRepo.save(oferta);
-
-            Aluno aluno = new Aluno();
-            aluno.setNomeCompleto("Pedro Cappelini");
-            aluno.setEmail("pedrocapp@estudante.ufscar.br");
-            aluno.setUsername("pedro.aluno");
-            aluno.setRA("832795");
-            aluno.setSenha("pedro1234");
-            usuarioRepo.save(aluno);
-
-            //inscrevendo o Aluno na Oferta
-            Inscricao inscricao = new Inscricao();
-            inscricao.setAluno(aluno);
-            inscricao.setOferta(oferta);
-            inscRepo.save(inscricao);
-
-            // ---------------------------------
+            Professor profResponsavel = new Professor();
+            profResponsavel.setNomeCompleto("Professor Luis");
+            profResponsavel.setEmail("luis@ufscar.br");
+            profResponsavel.setUsername("luis.prof");
+            profResponsavel.setSenha("luis98765");
+            usuarioRepo.save(profResponsavel);
 
             Professor profSupervisor = new Professor();
             profSupervisor.setNomeCompleto("Professora Maria");
@@ -71,6 +46,18 @@ public class PescdApplication {
             profSupervisor.setSenha("maria1234");
             usuarioRepo.save(profSupervisor);
 
+            // --- 2. CADASTRO DE ALUNOS ---
+
+            // para al02
+            Aluno aluno1 = new Aluno();
+            aluno1.setNomeCompleto("Pedro Cappelini");
+            aluno1.setEmail("pedrocapp@estudante.ufscar.br");
+            aluno1.setUsername("pedro.aluno");
+            aluno1.setRA("832795");
+            aluno1.setSenha("pedro1234");
+            usuarioRepo.save(aluno1);
+
+            //para al01
             Aluno aluno2 = new Aluno();
             aluno2.setNomeCompleto("Ana Estagiaria");
             aluno2.setEmail("ana@estudante.ufscar.br");
@@ -79,14 +66,53 @@ public class PescdApplication {
             aluno2.setSenha("ana123456");
             usuarioRepo.save(aluno2);
 
-            Inscricao inscricao2 = new Inscricao();
-            inscricao2.setAluno(aluno2);
-            inscricao2.setOferta(oferta);
+            // --- 3. CADASTRO DE OFERTAS ---
 
-            inscricao2.setProfessorSupervisor(profSupervisor);
-            inscricao2.setStatus(StatusAlunoOferta.PLANO_APROVADO);
+            Oferta ofertaAtual = new Oferta();
+            ofertaAtual.setNome("Desenvolvimento de Software para Web 1");
+            ofertaAtual.setSemestre("2026/1");
+            ofertaAtual.setDataInicio(LocalDate.of(2026, 3, 1));
+            ofertaAtual.setDataFim(LocalDate.of(2026, 7, 9));
+            ofertaAtual.setStatus(StatusOferta.EM_ANDAMENTO);
+            ofertaAtual.setProfessorResponsavel(profResponsavel);
+            ofertaAtual.setCriadoPor(sec);
+            ofertaAtual.setDataHoraCriacao(LocalDateTime.now());
+            ofertaRepo.save(ofertaAtual);
 
-            inscRepo.save(inscricao2);
+            //para al01
+            Oferta ofertaPassada = new Oferta();
+            ofertaPassada.setNome("Engenharia de Software 2");
+            ofertaPassada.setSemestre("2025/2");
+            ofertaPassada.setDataInicio(LocalDate.of(2025, 8, 1));
+            ofertaPassada.setDataFim(LocalDate.of(2025, 12, 10));
+            ofertaPassada.setStatus(StatusOferta.CONCLUIDA);
+            ofertaPassada.setProfessorResponsavel(profSupervisor); // Professora Maria como responsável aqui
+            ofertaPassada.setCriadoPor(sec);
+            ofertaPassada.setDataHoraCriacao(LocalDateTime.now().minusMonths(6));
+            ofertaRepo.save(ofertaPassada);
+
+
+            //al02
+            Inscricao inscricaoPedro = new Inscricao();
+            inscricaoPedro.setAluno(aluno1);
+            inscricaoPedro.setOferta(ofertaAtual);
+            inscricaoPedro.setStatus(StatusAlunoOferta.NAO_ENVIADO); // Explicitamente não enviado
+            inscRepo.save(inscricaoPedro);
+
+            Inscricao inscricaoAnaAtual = new Inscricao();
+            inscricaoAnaAtual.setAluno(aluno2);
+            inscricaoAnaAtual.setOferta(ofertaAtual);
+            inscricaoAnaAtual.setProfessorSupervisor(profSupervisor);
+            inscricaoAnaAtual.setStatus(StatusAlunoOferta.PLANO_APROVADO);
+            inscRepo.save(inscricaoAnaAtual);
+
+    //al01
+            Inscricao inscricaoAnaPassada = new Inscricao();
+            inscricaoAnaPassada.setAluno(aluno2);
+            inscricaoAnaPassada.setOferta(ofertaPassada);
+            inscricaoAnaPassada.setProfessorSupervisor(profResponsavel);
+            inscricaoAnaPassada.setStatus(StatusAlunoOferta.CONCLUIDO_RESPONSAVEL);
+            inscRepo.save(inscricaoAnaPassada);
         };
     }
 }
