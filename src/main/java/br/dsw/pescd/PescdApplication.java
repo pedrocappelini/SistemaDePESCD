@@ -29,21 +29,21 @@ public class PescdApplication {
             sec.setNomeCompleto("Secretario Lucas");
             sec.setEmail("lucas@ufscar.br");
             sec.setUsername("lucas.sec");
-            sec.setSenha("lucas678");
+            sec.setSenha("lucas1");
             usuarioRepo.save(sec);
 
             Professor profResponsavel = new Professor();
             profResponsavel.setNomeCompleto("Professor Luis");
             profResponsavel.setEmail("luis@ufscar.br");
             profResponsavel.setUsername("luis.prof");
-            profResponsavel.setSenha("luis98765");
+            profResponsavel.setSenha("luis1");
             usuarioRepo.save(profResponsavel);
 
             Professor profSupervisor = new Professor();
             profSupervisor.setNomeCompleto("Professora Maria");
             profSupervisor.setEmail("maria.supervisora@ufscar.br");
             profSupervisor.setUsername("maria.sup");
-            profSupervisor.setSenha("maria1234");
+            profSupervisor.setSenha("maria1");
             usuarioRepo.save(profSupervisor);
 
             // --- 2. CADASTRO DE ALUNOS ---
@@ -54,7 +54,7 @@ public class PescdApplication {
             aluno1.setEmail("pedrocapp@estudante.ufscar.br");
             aluno1.setUsername("pedro.aluno");
             aluno1.setRA("832795");
-            aluno1.setSenha("pedro1234");
+            aluno1.setSenha("pedro1");
             usuarioRepo.save(aluno1);
 
             //para al01
@@ -63,7 +63,7 @@ public class PescdApplication {
             aluno2.setEmail("ana@estudante.ufscar.br");
             aluno2.setUsername("ana.aluno");
             aluno2.setRA("112233");
-            aluno2.setSenha("ana123456");
+            aluno2.setSenha("ana1");
             usuarioRepo.save(aluno2);
 
             // --- 3. CADASTRO DE OFERTAS ---
@@ -106,7 +106,7 @@ public class PescdApplication {
             inscricaoAnaAtual.setStatus(StatusAlunoOferta.PLANO_APROVADO);
             inscRepo.save(inscricaoAnaAtual);
 
-    //al01
+            //al01
             Inscricao inscricaoAnaPassada = new Inscricao();
             inscricaoAnaPassada.setAluno(aluno2);
             inscricaoAnaPassada.setOferta(ofertaPassada);

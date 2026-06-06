@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -142,7 +143,8 @@ public class OfertaService {
     }
 
     private String salvarArquivo(MultipartFile arquivo, String prefixo, Long inscricaoId) throws IOException {
-        Path diretorio = Paths.get(uploadDir);
+        Path diretorio = Paths.get(uploadDir).toAbsolutePath().normalize();
+
         if (!Files.exists(diretorio)) {
             Files.createDirectories(diretorio);
         }
@@ -150,7 +152,7 @@ public class OfertaService {
         String nomeArquivo = prefixo + "_" + inscricaoId + "_" + System.currentTimeMillis() + ".pdf";
         Path destino = diretorio.resolve(nomeArquivo);
 
-        arquivo.transferTo(destino.toFile());
+        Files.copy(arquivo.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
 
         return nomeArquivo;
     }

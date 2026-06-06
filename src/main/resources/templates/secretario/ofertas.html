@@ -41,6 +41,7 @@
             <th>Professor Responsável</th>
             <th>Status</th>
             <th>Criado por</th>
+            <th>Criado em</th>
         </tr>
         </thead>
         <tbody>
@@ -57,6 +58,7 @@
                 </span>
             </td>
             <td th:text="${oferta.criadoPor.nomeCompleto}">Secretário</td>
+            <td th:text="${#temporals.format(oferta.dataHoraCriacao, 'dd/MM/yyyy HH:mm')}">01/03/2026 14:30</td>
         </tr>
         </tbody>
     </table>
