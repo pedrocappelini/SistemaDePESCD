@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Enviar Relatório Final - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - UFSCar</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+
+    <h1>Enviar Relatório Final de Estágio</h1>
+
+    <div class="info-card">
+        <h3>Resumo da Inscrição</h3>
+        <p><strong>Status Atual:</strong> <span th:text="${inscricao.status}">PLANO APROVADO</span></p>
+
+        <hr style="margin: 10px 0;">
+        <h4>Dados da Oferta</h4>
+        <p><strong>Oferta:</strong> <span th:text="${inscricao.oferta.nome}">Nome da Oferta</span></p>
+        <p><strong>Semestre:</strong> <span th:text="${inscricao.oferta.semestre}">2026/1</span></p>
+
+        <div th:if="${plano != null}">
+            <hr style="margin: 10px 0;">
+            <h4>Dados do Plano de Trabalho</h4>
+            <p><strong>Disciplina:</strong> <span th:text="${plano.codigoDisciplina} + ' - ' + ${plano.nomeDisciplina}">DCO003 - Cálculo I</span></p>
+            <p><strong>Curso:</strong> <span th:text="${plano.cursoDisciplina}">Engenharia</span></p>
+            <p><strong>Professor Supervisor:</strong> <span th:text="${inscricao.professorSupervisor.nomeCompleto}">Prof. Supervisor</span></p>
+        </div>
+    </div>
+
+    <div th:if="${erro}" class="alert-erro" th:text="${erro}"></div>
+
+    <form th:action="@{/aluno/relatorio/enviar}" method="post"
+          enctype="multipart/form-data" class="form-card">
+
+        <input type="hidden" name="ofertaId" th:value="${inscricao.oferta.id}"/>
+
+        <div class="form-grupo">
+            <label for="frequencia">Indicador de Frequência (%) <span class="obrigatorio">*</span></label>
+            <input type="number" id="frequencia" name="frequencia"
+                   placeholder="Ex: 100" required min="0" max="100"/>
+            <small>Insira a porcentagem de frequência concluída no estágio (0 a 100).</small>
+        </div>
+
+        <div class="form-grupo">
+            <label for="arquivo">Arquivo do Relatório Final (PDF, máx. 5MB) <span class="obrigatorio">*</span></label>
+            <input type="file" id="arquivo" name="arquivo"
+                   accept=".pdf" required/>
+            <small>Somente arquivos .pdf com até 5MB contendo o relatório final assinado.</small>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn-primario">Enviar Relatório</button>
+            <a th:href="@{/aluno/ofertas}" class="btn-secundario">Cancelar</a>
+        </div>
+
+    </form>
+
+</main>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const arquivo = document.getElementById('arquivo');
+        const file = arquivo.files[0];
+
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            e.preventDefault();
+            alert('O arquivo deve ser um PDF.');
+            return;
+        }
+
+        const maxTamanho = 5 * 1024 * 1024;
+        if (file.size > maxTamanho) {
+            e.preventDefault();
+            alert('O arquivo deve ter no máximo 5MB.');
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -149,4 +149,69 @@ public class AlunoController {
             return "redirect:/aluno/documentacao/enviar?ofertaId=" + ofertaId;
         }
     }
+
+    @Autowired
+    private br.dsw.pescd.repository.PlanoTrabalhoRepository planoTrabalhoRepository;
+
+    @GetMapping("/relatorio/enviar")
+    public String exibirFormularioRelatorio(
+            @RequestParam("ofertaId") Long ofertaId,
+            Authentication authentication,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            String username = authentication.getName();
+            Inscricao inscricao = ofertaService.buscarInscricao(username, ofertaId);
+
+            // Validação antecipada da PC-4 para evitar carregar a tela atoa
+            if (inscricao.getStatus() != br.dsw.pescd.enums.StatusAlunoOferta.PLANO_APROVADO) {
+                throw new IllegalArgumentException("Seu plano de trabalho precisa estar aprovado para enviar o relatório.");
+            }
+
+            // RN-1: Buscar o plano de trabalho para exibir dados de leitura
+            br.dsw.pescd.domain.PlanoTrabalho plano = planoTrabalhoRepository.findByInscricao(inscricao)
+                    .orElse(null);
+
+            model.addAttribute("inscricao", inscricao);
+            model.addAttribute("plano", plano);
+
+            return "aluno/enviar-relatorio";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/aluno/ofertas";
+        }
+    }
+
+    @PostMapping("/relatorio/enviar")
+    public String enviarRelatorio(
+            @RequestParam("ofertaId") Long ofertaId,
+            @RequestParam("frequencia") Integer frequencia,
+            @RequestParam("arquivo") org.springframework.web.multipart.MultipartFile arquivo,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            String username = authentication.getName();
+
+            ofertaService.enviarRelatorioFinal(
+                    username,
+                    ofertaId,
+                    frequencia,
+                    arquivo
+            );
+
+            redirectAttributes.addFlashAttribute("sucesso", "Relatório final enviado com sucesso para aprovação!");
+            return "redirect:/aluno/ofertas";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/aluno/relatorio/enviar?ofertaId=" + ofertaId;
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("erro", "Erro ao salvar o arquivo. Tente novamente.");
+            return "redirect:/aluno/relatorio/enviar?ofertaId=" + ofertaId;
+        }
+    }
 }

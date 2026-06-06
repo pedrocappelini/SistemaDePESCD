@@ -65,21 +65,31 @@
 
             <!-- Ações -->
             <td>
+                <!-- Botões para enviar Plano e Documentação (quando EM_ANDAMENTO e NAO_ENVIADO) -->
                 <div th:if="${inscricao.oferta.status.name() == 'EM_ANDAMENTO'
                               and inscricao.status.name() == 'NAO_ENVIADO'}">
                     <a th:href="@{/aluno/plano/enviar(ofertaId=${inscricao.oferta.id})}"
-                       class="btn-primario"
-                       style="display: inline-block; margin-right: 8px; font-size: 0.85rem; padding: 6px 12px;">
+                       class="btn-primario">
                         Enviar Plano
                     </a>
                     <a th:href="@{/aluno/documentacao/enviar(ofertaId=${inscricao.oferta.id})}"
-                       class="btn-secundario"
-                       style="display: inline-block; font-size: 0.85rem; padding: 6px 12px;">
+                       class="btn-secundario">
                         Enviar Documentação
                     </a>
                 </div>
-                <span th:unless="${inscricao.oferta.status.name() == 'EM_ANDAMENTO'
-                                 and inscricao.status.name() == 'NAO_ENVIADO'}">—</span>
+
+                <!-- Botão para enviar Relatório Final (quando PLANO_APROVADO) -->
+                <div th:if="${inscricao.status.name() == 'PLANO_APROVADO'}">
+                    <a th:href="@{/aluno/relatorio/enviar(ofertaId=${inscricao.oferta.id})}"
+                       class="btn-primario">
+                        Enviar Relatório Final
+                    </a>
+                </div>
+
+                <!-- Placeholder para outros status -->
+                <span th:unless="${(inscricao.oferta.status.name() == 'EM_ANDAMENTO' and inscricao.status.name() == 'NAO_ENVIADO') or inscricao.status.name() == 'PLANO_APROVADO'}">
+                    —
+                </span>
             </td>
         </tr>
         </tbody>
