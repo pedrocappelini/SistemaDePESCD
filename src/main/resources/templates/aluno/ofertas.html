@@ -36,6 +36,7 @@
             <th>Professor Responsável</th>
             <th>Status da Oferta</th>
             <th>Seu Status</th>
+            <th>Ações</th>
         </tr>
         </thead>
         <tbody>
@@ -59,6 +60,18 @@
                       th:class="'badge status-' + ${inscricao.status}">
                     NAO_ENVIADO
                 </span>
+            </td>
+
+             <!-- Ações disponíveis conforme status -->
+            <td>
+                <!-- Botão aparece só se oferta EM_ANDAMENTO e aluno NAO_ENVIADO -->
+                <a th:if="${inscricao.oferta.status.name() == 'EM_ANDAMENTO'
+                           and inscricao.status.name() == 'NAO_ENVIADO'}"
+                   th:href="@{/aluno/plano/enviar(ofertaId=${inscricao.oferta.id})}"
+                   class="btn-primario">
+                    Enviar Plano
+                </a>
+                <span th:if="${inscricao.status.name() != 'NAO_ENVIADO'}">—</span>
             </td>
 
         </tr>
