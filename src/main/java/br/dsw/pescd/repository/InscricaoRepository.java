@@ -17,4 +17,6 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
     Optional<Inscricao> findByAlunoAndOferta(Aluno aluno, Oferta oferta);
 
     List<Inscricao> findByOferta(Oferta oferta);
+
+    List<Inscricao> findByProfessorSupervisor(br.dsw.pescd.domain.Professor professorSupervisor);
 }

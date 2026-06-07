@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -29,4 +31,9 @@ public class PlanoTrabalho {
     @OneToOne
     @JoinColumn(name = "inscricao_id", nullable = false, unique = true)
     private Inscricao inscricao;
+
+    @Column(columnDefinition = "TEXT")
+    private String parecerSupervisor;
+
+    private LocalDateTime dataHoraAvaliacao;
 }

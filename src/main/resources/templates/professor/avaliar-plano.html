@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Avaliar Plano de Trabalho - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - Professor Supervisor</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+    <h1>Avaliar Plano de Trabalho</h1>
+
+    <div class="info-card">
+        <h3>Dados do Aluno</h3>
+        <p><strong>Nome:</strong> <span th:text="${inscricao.aluno.nomeCompleto}">Aluno</span></p>
+        <p><strong>RA:</strong> <span th:text="${inscricao.aluno.RA}">123456</span></p>
+
+        <hr style="margin: 15px 0;">
+
+        <h3>Dados do Plano de Trabalho</h3>
+        <p><strong>Disciplina:</strong> <span th:text="${plano.codigoDisciplina} + ' - ' + ${plano.nomeDisciplina}">Código - Nome</span></p>
+        <p><strong>Curso:</strong> <span th:text="${plano.cursoDisciplina}">Curso</span></p>
+        <p><strong>Arquivo PDF:</strong> <a th:href="@{'/uploads/' + ${plano.nomeArquivo}}" target="_blank">Visualizar Documento</a></p>
+    </div>
+
+    <form th:action="@{/professor/planos/{id}/aprovar(id=${inscricao.id})}" method="post" class="form-card" style="margin-top: 20px;">
+
+        <div class="form-grupo">
+            <label for="parecer">Parecer <span class="obrigatorio">*</span></label>
+            <textarea id="parecer" name="parecer" rows="5" required
+                      placeholder="Insira o seu parecer formal autorizando o início do estágio..."
+                      style="width: 100%; padding: 10px;"></textarea>
+            <small>Este parecer será salvo como registro da aprovação.</small>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn-primario">Aprovar Plano</button>
+            <a th:href="@{/professor/ofertas}" class="btn-secundario">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

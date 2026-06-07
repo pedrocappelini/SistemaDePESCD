@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**").permitAll() // arquivos estáticos
                 .requestMatchers("/login").permitAll()            // tela de login
                 .requestMatchers("/aluno/**").hasRole("ALUNO")    // só alunos
-                .requestMatchers("/secretario/**").hasRole("SECRETARIO")  
+                .requestMatchers("/secretario/**").hasRole("SECRETARIO")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
