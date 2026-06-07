@@ -3,13 +3,13 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Ofertas - PESCD</title>
+    <title>Ofertas - Secretário - PESCD</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 <body>
 
 <header>
-    <h2>Sistema PESCD - UFSCar</h2>
+    <h2>Sistema PESCD - Secretário</h2>
     <div>
         Logado como: <strong sec:authentication="name"></strong>
         <form th:action="@{/logout}" method="post" style="display:inline">
@@ -19,50 +19,37 @@
 </header>
 
 <main class="container">
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1>Ofertas do PESCD</h1>
-        <a th:href="@{/secretario/ofertas/nova}" class="btn-primario">+ Nova Oferta</a>
-    </div>
+    <h1>Ofertas Cadastradas</h1>
 
     <div th:if="${sucesso}" class="alert-sucesso" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert-erro" th:text="${erro}"></div>
 
-    <div th:if="${#lists.isEmpty(ofertas)}" class="alert-info">
-        Nenhuma oferta cadastrada. Clique em "+ Nova Oferta" para começar.
+    <div style="margin-bottom: 20px;">
+        <a th:href="@{/secretario/ofertas/nova}" class="btn-primario">Criar Nova Oferta</a>
     </div>
 
-    <table th:if="${not #lists.isEmpty(ofertas)}" class="tabela-ofertas">
+    <table class="tabela-padrao">
         <thead>
         <tr>
+            <th>ID</th>
             <th>Nome</th>
             <th>Semestre</th>
-            <th>Início</th>
-            <th>Fim</th>
-            <th>Professor Responsável</th>
             <th>Status</th>
-            <th>Criado por</th>
-            <th>Criado em</th>
+            <th>Ações</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="oferta : ${ofertas}">
-            <td th:text="${oferta.nome}">Nome</td>
+            <td th:text="${oferta.id}">1</td>
+            <td th:text="${oferta.nome}">PESCD - 2026/1</td>
             <td th:text="${oferta.semestre}">2026/1</td>
-            <td th:text="${#temporals.format(oferta.dataInicio, 'dd/MM/yyyy')}">01/03/2026</td>
-            <td th:text="${#temporals.format(oferta.dataFim, 'dd/MM/yyyy')}">09/07/2026</td>
-            <td th:text="${oferta.professorResponsavel.nomeCompleto}">Prof.</td>
+            <td th:text="${oferta.status}">EM_ANDAMENTO</td>
             <td>
-                <span th:text="${oferta.status}"
-                      th:class="'badge status-' + ${oferta.status}">
-                    EM_ANDAMENTO
-                </span>
+                <a th:href="@{/secretario/ofertas/{id}/alunos(id=${oferta.id})}" class="btn-secundario">Gerenciar Alunos</a>
             </td>
-            <td th:text="${oferta.criadoPor.nomeCompleto}">Secretário</td>
-            <td th:text="${#temporals.format(oferta.dataHoraCriacao, 'dd/MM/yyyy HH:mm')}">01/03/2026 14:30</td>
         </tr>
         </tbody>
     </table>
-
 </main>
 
 </body>

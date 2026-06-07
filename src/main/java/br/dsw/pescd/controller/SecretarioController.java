@@ -8,6 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import br.dsw.pescd.domain.Inscricao;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 @Controller
 @RequestMapping("/secretario")
@@ -25,6 +28,23 @@ public class SecretarioController {
         model.addAttribute("professores", ofertaService.listarProfessores());
 
         return "secretario/criar-oferta";
+    }
+
+    @GetMapping("/ofertas/{id}/alunos")
+    public String gerenciarAlunos(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
+            List<Inscricao> inscricoes = ofertaService.listarInscricoesDaOferta(ofertaId);
+
+            model.addAttribute("oferta", oferta);
+            model.addAttribute("inscricoes", inscricoes);
+
+            return "secretario/gerenciar-alunos";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/secretario/ofertas";
+        }
     }
 
 
@@ -46,6 +66,59 @@ public class SecretarioController {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
             return "redirect:/secretario/ofertas/nova";
         }
+    }
+
+
+    @PostMapping("/ofertas/{id}/alunos/csv")
+    public String adicionarAlunosCsv(
+            @PathVariable("id") Long ofertaId,
+            @RequestParam("arquivoCsv") MultipartFile arquivoCsv,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            ofertaService.adicionarAlunosPorCsv(ofertaId, arquivoCsv);
+            redirectAttributes.addFlashAttribute("sucesso", "Arquivo CSV processado. Alunos adicionados à oferta!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("erro", "Erro inesperado ao ler o arquivo CSV. Verifique a formatação.");
+        }
+
+        return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
+    }
+
+    @PostMapping("/ofertas/{id}/alunos/existente")
+    public String adicionarAlunoExistente(
+            @PathVariable("id") Long ofertaId,
+            @RequestParam("email") String email,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            ofertaService.adicionarAlunoExistente(ofertaId, email);
+            redirectAttributes.addFlashAttribute("sucesso", "Aluno existente adicionado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
+
+        return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
+    }
+
+    @PostMapping("/ofertas/{id}/alunos/novo")
+    public String cadastrarNovoAluno(
+            @PathVariable("id") Long ofertaId,
+            @RequestParam("ra") String ra,
+            @RequestParam("nomeCompleto") String nomeCompleto,
+            @RequestParam("email") String email,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            ofertaService.cadastrarNovoAlunoEMatricular(ofertaId, ra, nomeCompleto, email);
+            redirectAttributes.addFlashAttribute("sucesso", "Novo aluno cadastrado e matriculado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
+
+        return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
     }
 
 

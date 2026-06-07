@@ -15,4 +15,6 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
     List<Inscricao> findByAluno(Aluno aluno);
 
     Optional<Inscricao> findByAlunoAndOferta(Aluno aluno, Oferta oferta);
+
+    List<Inscricao> findByOferta(Oferta oferta);
 }
