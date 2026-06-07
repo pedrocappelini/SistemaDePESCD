@@ -1,14 +1,16 @@
 package br.dsw.pescd.controller;
 
 import br.dsw.pescd.domain.Oferta;
+import br.dsw.pescd.domain.Inscricao;
 import br.dsw.pescd.service.OfertaService;
+import br.dsw.pescd.service.InscricaoService;
+import br.dsw.pescd.service.ProfessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import br.dsw.pescd.domain.Inscricao;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
@@ -19,13 +21,18 @@ public class SecretarioController {
     @Autowired
     private OfertaService ofertaService;
 
+    @Autowired
+    private InscricaoService inscricaoService;
+
+    @Autowired
+    private ProfessorService professorService;
 
     @GetMapping("/ofertas/nova")
     public String exibirFormulario(Model model) {
 
         model.addAttribute("oferta", new Oferta());
 
-        model.addAttribute("professores", ofertaService.listarProfessores());
+        model.addAttribute("professores", professorService.listarProfessores());
 
         return "secretario/criar-oferta";
     }
@@ -34,7 +41,8 @@ public class SecretarioController {
     public String gerenciarAlunos(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
         try {
             Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
-            List<Inscricao> inscricoes = ofertaService.listarInscricoesDaOferta(ofertaId);
+
+            List<Inscricao> inscricoes = inscricaoService.listarInscricoesDaOferta(ofertaId);
 
             model.addAttribute("oferta", oferta);
             model.addAttribute("inscricoes", inscricoes);
@@ -46,7 +54,6 @@ public class SecretarioController {
             return "redirect:/secretario/ofertas";
         }
     }
-
 
     @PostMapping("/ofertas/nova")
     public String criarOferta(
@@ -68,7 +75,6 @@ public class SecretarioController {
         }
     }
 
-
     @PostMapping("/ofertas/{id}/alunos/csv")
     public String adicionarAlunosCsv(
             @PathVariable("id") Long ofertaId,
@@ -76,7 +82,7 @@ public class SecretarioController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            ofertaService.adicionarAlunosPorCsv(ofertaId, arquivoCsv);
+            inscricaoService.adicionarAlunosPorCsv(ofertaId, arquivoCsv);
             redirectAttributes.addFlashAttribute("sucesso", "Arquivo CSV processado. Alunos adicionados à oferta!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
@@ -94,7 +100,7 @@ public class SecretarioController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            ofertaService.adicionarAlunoExistente(ofertaId, email);
+            inscricaoService.adicionarAlunoExistente(ofertaId, email);
             redirectAttributes.addFlashAttribute("sucesso", "Aluno existente adicionado com sucesso!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
@@ -112,7 +118,7 @@ public class SecretarioController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            ofertaService.cadastrarNovoAlunoEMatricular(ofertaId, ra, nomeCompleto, email);
+            inscricaoService.cadastrarNovoAlunoEMatricular(ofertaId, ra, nomeCompleto, email);
             redirectAttributes.addFlashAttribute("sucesso", "Novo aluno cadastrado e matriculado com sucesso!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
@@ -120,7 +126,6 @@ public class SecretarioController {
 
         return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
     }
-
 
     @GetMapping("/ofertas")
     public String listarOfertas(Model model) {

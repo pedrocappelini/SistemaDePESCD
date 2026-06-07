@@ -108,4 +108,8 @@ public class ProfessorService {
         inscricao.setStatus(StatusAlunoOferta.RELATORIO_APROVADO_SUPERVISOR);
         inscricaoRepository.save(inscricao);
     }
+
+    public List<Professor> listarProfessores() {
+        return professorRepository.findAll();
+    }
 }

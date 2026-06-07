@@ -1,28 +1,15 @@
 package br.dsw.pescd.service;
 
-import br.dsw.pescd.domain.Documentacao;
-import br.dsw.pescd.repository.DocumentacaoRepository;
-import br.dsw.pescd.domain.RelatorioFinal;
-import br.dsw.pescd.repository.RelatorioFinalRepository;
-import br.dsw.pescd.domain.*;
-import br.dsw.pescd.enums.StatusAlunoOferta;
+import br.dsw.pescd.domain.Oferta;
+import br.dsw.pescd.domain.Professor;
+import br.dsw.pescd.domain.Secretario;
 import br.dsw.pescd.enums.StatusOferta;
-import br.dsw.pescd.repository.*;
+import br.dsw.pescd.repository.OfertaRepository;
+import br.dsw.pescd.repository.ProfessorRepository;
+import br.dsw.pescd.repository.SecretarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
-import java.io.IOException;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,43 +20,12 @@ public class OfertaService {
     private OfertaRepository ofertaRepository;
 
     @Autowired
-    private InscricaoRepository inscricaoRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AlunoRepository alunoRepository;
-
-    @Autowired
     private ProfessorRepository professorRepository;
 
     @Autowired
     private SecretarioRepository secretarioRepository;
 
-    @Autowired
-    private PlanoTrabalhoRepository planoTrabalhoRepository;
-
-    @Autowired
-    private DocumentacaoRepository documentacaoRepository;
-
-    @Autowired
-    private RelatorioFinalRepository relatorioFinalRepository;
-
-    @Value("${app.upload.dir}")
-    private String uploadDir;
-
-    public List<Inscricao> buscarInscricoesDoAluno(String username) {
-        Aluno aluno = alunoRepository.findByUsername(username);
-        return inscricaoRepository.findByAluno(aluno);
-    }
-
-    public List<Professor> listarProfessores() {
-        return professorRepository.findAll();
-    }
-
     public void criarOferta(Oferta oferta, Long professorId, String username) {
-
         if (!oferta.getDataFim().isAfter(oferta.getDataInicio())) {
             throw new IllegalArgumentException("A data de fim deve ser posterior à data de início.");
         }
@@ -85,7 +41,6 @@ public class OfertaService {
         Secretario secretario = secretarioRepository.findByUsername(username);
         oferta.setCriadoPor(secretario);
         oferta.setDataHoraCriacao(LocalDateTime.now());
-
         oferta.setStatus(StatusOferta.EM_ANDAMENTO);
 
         ofertaRepository.save(oferta);
@@ -95,259 +50,8 @@ public class OfertaService {
         return ofertaRepository.findAll();
     }
 
-    public Inscricao buscarInscricao(String username, Long ofertaId) {
-        Aluno aluno = alunoRepository.findByUsername(username);
-        Oferta oferta = ofertaRepository.findById(ofertaId)
-                .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
-
-        return inscricaoRepository.findByAlunoAndOferta(aluno, oferta)
-                .orElseThrow(() -> new IllegalArgumentException("Inscrição não encontrada."));
-    }
-
-    public void enviarDocumentacao (
-            String username,
-            Long ofertaId,
-            String instituicao,
-            String nomeDisciplina,
-            String cursoDisciplina,
-            Integer cargaHoraria,
-            MultipartFile arquivo) throws IOException {
-
-        Inscricao inscricao = buscarInscricao(username, ofertaId);
-
-        if (inscricao.getOferta().getStatus() != StatusOferta.EM_ANDAMENTO) {
-            throw new IllegalArgumentException("A oferta não está em andamento.");
-        }
-
-        if (inscricao.getStatus() != StatusAlunoOferta.NAO_ENVIADO) {
-            throw new IllegalArgumentException("Você já realizou um envio nesta oferta ou a mesma não permite novos envios.");
-        }
-
-        if (instituicao == null || instituicao.isBlank() ||
-                nomeDisciplina == null || nomeDisciplina.isBlank() ||
-                cursoDisciplina == null || cursoDisciplina.isBlank() ||
-                cargaHoraria == null || cargaHoraria <= 0) {
-            throw new IllegalArgumentException("Todos os campos obrigatórios devem ser preenchidos corretamente.");
-        }
-
-        if (arquivo.isEmpty() || !isPDF(arquivo)) {
-            throw new IllegalArgumentException("O arquivo com a documentação comprobatória deve ser um PDF.");
-        }
-
-        long maxTamanho = 5 * 1024 * 1024;
-        if (arquivo.getSize() > maxTamanho) {
-            throw new IllegalArgumentException("O arquivo deve ter no máximo 5MB.");
-        }
-
-        String nomeArquivoSalvo = salvarArquivo(arquivo, "doc_ensino", inscricao.getId());
-
-        Documentacao doc = new Documentacao();
-        doc.setInstituicao(instituicao);
-        doc.setNomeDisciplina(nomeDisciplina);
-        doc.setCursoDisciplina(cursoDisciplina);
-        doc.setCargaHoraria(cargaHoraria);
-        doc.setNomeArquivo(nomeArquivoSalvo);
-        doc.setInscricao(inscricao);
-        documentacaoRepository.save(doc);
-
-        inscricao.setStatus(StatusAlunoOferta.DOCUMENTACAO_ENVIADA);
-        inscricaoRepository.save(inscricao);
-    }
-
-    public void enviarRelatorioFinal(
-            String username,
-            Long ofertaId,
-            Integer frequencia,
-            MultipartFile arquivo) throws IOException {
-
-        Inscricao inscricao = buscarInscricao(username, ofertaId);
-
-        if (inscricao.getOferta().getStatus() != StatusOferta.EM_ANDAMENTO) {
-            throw new IllegalArgumentException("A oferta não está em andamento.");
-        }
-
-        if (inscricao.getStatus() != StatusAlunoOferta.PLANO_APROVADO) {
-            throw new IllegalArgumentException("Você só pode enviar o relatório final se o seu plano de trabalho estiver aprovado.");
-        }
-
-        if (frequencia == null || frequencia < 0 || frequencia > 100) {
-            throw new IllegalArgumentException("A frequência deve ser um valor entre 0 e 100.");
-        }
-
-        if (arquivo.isEmpty() || !isPDF(arquivo)) {
-            throw new IllegalArgumentException("O arquivo com o relatório deve ser um PDF.");
-        }
-
-        long maxTamanho = 5 * 1024 * 1024;
-        if (arquivo.getSize() > maxTamanho) {
-            throw new IllegalArgumentException("O arquivo deve ter no máximo 5MB.");
-        }
-
-        String nomeArquivoSalvo = salvarArquivo(arquivo, "relatorio", inscricao.getId());
-
-        RelatorioFinal relatorio = new RelatorioFinal();
-        relatorio.setFrequencia(frequencia);
-        relatorio.setNomeArquivo(nomeArquivoSalvo);
-        relatorio.setInscricao(inscricao);
-        relatorioFinalRepository.save(relatorio);
-
-        inscricao.setStatus(StatusAlunoOferta.RELATORIO_ENVIADO);
-        inscricaoRepository.save(inscricao);
-    }
-
-    public void enviarPlano(
-            String username,
-            Long ofertaId,
-            String codigoDisciplina,
-            String nomeDisciplina,
-            String cursoDisciplina,
-            Long professorSupId,
-            MultipartFile arquivo) throws IOException {
-
-        Inscricao inscricao = buscarInscricao(username, ofertaId);
-
-        if (inscricao.getOferta().getStatus() != StatusOferta.EM_ANDAMENTO) {
-            throw new IllegalArgumentException("A oferta não está em andamento.");
-        }
-
-        if (inscricao.getStatus() != StatusAlunoOferta.NAO_ENVIADO) {
-            throw new IllegalArgumentException("Você já realizou um envio nesta oferta.");
-        }
-
-        if (arquivo.isEmpty() || !isPDF(arquivo)) {
-            throw new IllegalArgumentException("O arquivo deve ser um PDF.");
-        }
-
-        long maxTamanho = 5 * 1024 * 1024; 
-        if (arquivo.getSize() > maxTamanho) {
-            throw new IllegalArgumentException("O arquivo deve ter no máximo 5MB.");
-        }
-
-        String nomeArquivoSalvo = salvarArquivo(arquivo, "plano", inscricao.getId());
-
-        Professor supervisor = professorRepository.findById(professorSupId)
-                .orElseThrow(() -> new IllegalArgumentException("Professor supervisor não encontrado."));
-
-        PlanoTrabalho plano = new PlanoTrabalho();
-        plano.setCodigoDisciplina(codigoDisciplina);
-        plano.setNomeDisciplina(nomeDisciplina);
-        plano.setCursoDisciplina(cursoDisciplina);
-        plano.setNomeArquivo(nomeArquivoSalvo);
-        plano.setInscricao(inscricao);
-        planoTrabalhoRepository.save(plano);
-
-        inscricao.setProfessorSupervisor(supervisor);
-        inscricao.setStatus(StatusAlunoOferta.PLANO_ENVIADO);
-        inscricaoRepository.save(inscricao);
-    }
-
-    private boolean isPDF(MultipartFile arquivo) {
-        String contentType = arquivo.getContentType();
-        String nomeOriginal = arquivo.getOriginalFilename();
-
-        boolean tipoCorreto = "application/pdf".equalsIgnoreCase(contentType);
-        boolean extensaoCorreta = nomeOriginal != null && nomeOriginal.toLowerCase().endsWith(".pdf");
-
-        return tipoCorreto && extensaoCorreta;
-    }
-
-    private String salvarArquivo(MultipartFile arquivo, String prefixo, Long inscricaoId) throws IOException {
-        Path diretorio = Paths.get(uploadDir).toAbsolutePath().normalize();
-
-        if (!Files.exists(diretorio)) {
-            Files.createDirectories(diretorio);
-        }
-
-        String nomeArquivo = prefixo + "_" + inscricaoId + "_" + System.currentTimeMillis() + ".pdf";
-        Path destino = diretorio.resolve(nomeArquivo);
-
-        Files.copy(arquivo.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-
-        return nomeArquivo;
-    }
-
     public Oferta buscarOfertaPorId(Long ofertaId) {
         return ofertaRepository.findById(ofertaId)
                 .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
     }
-
-    public List<Inscricao> listarInscricoesDaOferta(Long ofertaId) {
-        Oferta oferta = buscarOfertaPorId(ofertaId);
-        return inscricaoRepository.findByOferta(oferta);
-    }
-
-    private void criarInscricao(Aluno aluno, Oferta oferta) {
-        if (inscricaoRepository.findByAlunoAndOferta(aluno, oferta).isPresent()) {
-            throw new IllegalArgumentException("O aluno " + aluno.getEmail() + " já está inserido nesta oferta.");
-        }
-        Inscricao inscricao = new Inscricao();
-        inscricao.setAluno(aluno);
-        inscricao.setOferta(oferta);
-        inscricao.setStatus(StatusAlunoOferta.NAO_ENVIADO);
-        inscricaoRepository.save(inscricao);
-    }
-
-    public void adicionarAlunoExistente(Long ofertaId, String email) {
-        Oferta oferta = buscarOfertaPorId(ofertaId);
-        Aluno aluno = alunoRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Nenhum aluno encontrado no sistema com o e-mail: " + email));
-
-        criarInscricao(aluno, oferta);
-    }
-
-    public void cadastrarNovoAlunoEMatricular(Long ofertaId, String ra, String nomeCompleto, String email) {
-        Oferta oferta = buscarOfertaPorId(ofertaId);
-
-        if (alunoRepository.findByEmail(email).isPresent()) {
-            throw new IllegalArgumentException("Já existe um aluno no sistema com este e-mail. Utilize a opção de 'Adicionar Aluno Existente'.");
-        }
-
-        Aluno aluno = new Aluno();
-        aluno.setRA(ra);
-        aluno.setNomeCompleto(nomeCompleto);
-        aluno.setEmail(email);
-        aluno.setUsername(email);
-        aluno.setSenha(passwordEncoder.encode(ra));
-        aluno = alunoRepository.save(aluno);
-
-        criarInscricao(aluno, oferta);
-    }
-
-    public void adicionarAlunosPorCsv(Long ofertaId, MultipartFile arquivoCsv) throws IOException {
-        if (arquivoCsv.isEmpty()) {
-            throw new IllegalArgumentException("O arquivo CSV não pode estar vazio.");
-        }
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(arquivoCsv.getInputStream(), StandardCharsets.UTF_8))) {
-            String linha;
-            boolean primeiraLinha = true;
-
-            while ((linha = br.readLine()) != null) {
-                if (linha.trim().isEmpty()) continue;
-
-                if (primeiraLinha) {
-                    primeiraLinha = false;
-                    continue;
-                }
-
-                String[] dados = linha.split(",");
-                if (dados.length >= 3) {
-                    String ra = dados[0].trim();
-                    String nome = dados[1].trim();
-                    String email = dados[2].trim();
-
-                    try {
-                        if (alunoRepository.findByEmail(email).isPresent()) {
-                            adicionarAlunoExistente(ofertaId, email);
-                        } else {
-                            cadastrarNovoAlunoEMatricular(ofertaId, ra, nome, email);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Aviso no CSV (" + email + "): " + e.getMessage());
-                    }
-                }
-            }
-        }
-    }
-
 }

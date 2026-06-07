@@ -1,12 +1,18 @@
 package br.dsw.pescd.controller;
 
 import br.dsw.pescd.domain.Inscricao;
-import br.dsw.pescd.service.OfertaService;
+import br.dsw.pescd.domain.PlanoTrabalho;
+import br.dsw.pescd.enums.StatusAlunoOferta;
+import br.dsw.pescd.repository.PlanoTrabalhoRepository;
+import br.dsw.pescd.service.InscricaoService;
+import br.dsw.pescd.service.ProfessorService;
+import br.dsw.pescd.service.SubmissaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -16,14 +22,23 @@ import java.util.List;
 public class AlunoController {
 
     @Autowired
-    private OfertaService ofertaService;
+    private InscricaoService inscricaoService;
+
+    @Autowired
+    private ProfessorService professorService;
+
+    @Autowired
+    private SubmissaoService submissaoService;
+
+    @Autowired
+    private PlanoTrabalhoRepository planoTrabalhoRepository;
 
     @GetMapping("/ofertas")
     public String listarOfertas(Authentication authentication, Model model) {
 
         String username = authentication.getName();
 
-        List<Inscricao> inscricoes = ofertaService.buscarInscricoesDoAluno(username);
+        List<Inscricao> inscricoes = inscricaoService.buscarInscricoesDoAluno(username);
 
         model.addAttribute("inscricoes", inscricoes);
 
@@ -40,10 +55,11 @@ public class AlunoController {
         try {
             String username = authentication.getName();
 
-            Inscricao inscricao = ofertaService.buscarInscricao(username, ofertaId);
+            Inscricao inscricao = inscricaoService.buscarInscricao(username, ofertaId);
 
             model.addAttribute("inscricao", inscricao);
-            model.addAttribute("professores", ofertaService.listarProfessores());
+
+            model.addAttribute("professores", professorService.listarProfessores());
 
             return "aluno/enviar-plano";
 
@@ -60,14 +76,14 @@ public class AlunoController {
             @RequestParam("nomeDisciplina") String nomeDisciplina,
             @RequestParam("cursoDisciplina") String cursoDisciplina,
             @RequestParam("professorSupId") Long professorSupId,
-            @RequestParam("arquivo") org.springframework.web.multipart.MultipartFile arquivo,
+            @RequestParam("arquivo") MultipartFile arquivo,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
         try {
             String username = authentication.getName();
 
-            ofertaService.enviarPlano(
+            submissaoService.enviarPlano(
                     username,
                     ofertaId,
                     codigoDisciplina,
@@ -99,9 +115,8 @@ public class AlunoController {
 
         try {
             String username = authentication.getName();
-            // PC-1 é garantida pelo Spring Security e Authentication.
-            // PC-2 é validada pelo buscarInscricao (gera erro se não achar).
-            Inscricao inscricao = ofertaService.buscarInscricao(username, ofertaId);
+
+            Inscricao inscricao = inscricaoService.buscarInscricao(username, ofertaId);
 
             model.addAttribute("inscricao", inscricao);
 
@@ -120,14 +135,14 @@ public class AlunoController {
             @RequestParam("nomeDisciplina") String nomeDisciplina,
             @RequestParam("cursoDisciplina") String cursoDisciplina,
             @RequestParam("cargaHoraria") Integer cargaHoraria,
-            @RequestParam("arquivo") org.springframework.web.multipart.MultipartFile arquivo,
+            @RequestParam("arquivo") MultipartFile arquivo,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
         try {
             String username = authentication.getName();
 
-            ofertaService.enviarDocumentacao(
+            submissaoService.enviarDocumentacao(
                     username,
                     ofertaId,
                     instituicao,
@@ -150,9 +165,6 @@ public class AlunoController {
         }
     }
 
-    @Autowired
-    private br.dsw.pescd.repository.PlanoTrabalhoRepository planoTrabalhoRepository;
-
     @GetMapping("/relatorio/enviar")
     public String exibirFormularioRelatorio(
             @RequestParam("ofertaId") Long ofertaId,
@@ -162,15 +174,14 @@ public class AlunoController {
 
         try {
             String username = authentication.getName();
-            Inscricao inscricao = ofertaService.buscarInscricao(username, ofertaId);
 
-            // Validação antecipada da PC-4 para evitar carregar a tela atoa
-            if (inscricao.getStatus() != br.dsw.pescd.enums.StatusAlunoOferta.PLANO_APROVADO) {
+            Inscricao inscricao = inscricaoService.buscarInscricao(username, ofertaId);
+
+            if (inscricao.getStatus() != StatusAlunoOferta.PLANO_APROVADO) {
                 throw new IllegalArgumentException("Seu plano de trabalho precisa estar aprovado para enviar o relatório.");
             }
 
-            // RN-1: Buscar o plano de trabalho para exibir dados de leitura
-            br.dsw.pescd.domain.PlanoTrabalho plano = planoTrabalhoRepository.findByInscricao(inscricao)
+            PlanoTrabalho plano = planoTrabalhoRepository.findByInscricao(inscricao)
                     .orElse(null);
 
             model.addAttribute("inscricao", inscricao);
@@ -188,14 +199,14 @@ public class AlunoController {
     public String enviarRelatorio(
             @RequestParam("ofertaId") Long ofertaId,
             @RequestParam("frequencia") Integer frequencia,
-            @RequestParam("arquivo") org.springframework.web.multipart.MultipartFile arquivo,
+            @RequestParam("arquivo") MultipartFile arquivo,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
         try {
             String username = authentication.getName();
 
-            ofertaService.enviarRelatorioFinal(
+            submissaoService.enviarRelatorioFinal(
                     username,
                     ofertaId,
                     frequencia,
