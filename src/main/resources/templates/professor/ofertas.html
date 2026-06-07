@@ -54,9 +54,13 @@
                        th:href="@{/professor/planos/{id}/avaliar(id=${inscricao.id})}"
                        class="btn-primario btn-sm">Aprovar Plano</a>
 
-                    <span th:if="${inscricao.status.name() != 'PLANO_ENVIADO'}" class="texto-mutado">
-                            Sem ações pendentes
-                        </span>
+                    <a th:if="${inscricao.status.name() == 'RELATORIO_ENVIADO'}"
+                       th:href="@{/professor/relatorios/{id}/avaliar(id=${inscricao.id})}"
+                       class="btn-primario btn-sm">Aprovar Relatório</a>
+
+                    <span th:if="${inscricao.status.name() != 'PLANO_ENVIADO' and inscricao.status.name() != 'RELATORIO_ENVIADO'}" class="texto-mutado">
+                        Sem ações pendentes
+                    </span>
                 </td>
             </tr>
             </tbody>

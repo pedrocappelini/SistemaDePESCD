@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import br.dsw.pescd.domain.RelatorioFinal;
+import br.dsw.pescd.repository.RelatorioFinalRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,9 @@ public class ProfessorController {
 
     @Autowired
     private PlanoTrabalhoRepository planoTrabalhoRepository;
+
+    @Autowired
+    private RelatorioFinalRepository relatorioFinalRepository;
 
     @GetMapping("/ofertas")
     public String listarMinhasSupervisoes(Authentication authentication, Model model) {
@@ -76,6 +81,56 @@ public class ProfessorController {
             redirectAttributes.addFlashAttribute("sucesso", "Plano de trabalho aprovado com sucesso!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
+
+        return "redirect:/professor/ofertas";
+    }
+
+    @GetMapping("/relatorios/{inscricaoId}/avaliar")
+    public String exibirFormularioRelatorio(
+            @PathVariable("inscricaoId") Long inscricaoId,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            Inscricao inscricao = professorService.buscarInscricaoPorId(inscricaoId);
+
+            // RN-2: Dados do plano (leitura)
+            PlanoTrabalho plano = planoTrabalhoRepository.findByInscricao(inscricao).orElse(null);
+
+            // RN-2: Dados do relatório (leitura)
+            RelatorioFinal relatorio = relatorioFinalRepository.findByInscricao(inscricao)
+                    .orElseThrow(() -> new IllegalArgumentException("Relatório não encontrado."));
+
+            model.addAttribute("inscricao", inscricao);
+            model.addAttribute("plano", plano);
+            model.addAttribute("relatorio", relatorio);
+
+            return "professor/avaliar-relatorio";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/professor/ofertas";
+        }
+    }
+
+    @PostMapping("/relatorios/{inscricaoId}/aprovar")
+    public String aprovarRelatorio(
+            @PathVariable("inscricaoId") Long inscricaoId,
+            @RequestParam("parecer") String parecer,
+            @RequestParam("frequencia") Integer frequencia,
+            @RequestParam("sugestaoNota") String sugestaoNota,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            String username = authentication.getName();
+            professorService.aprovarRelatorioFinal(inscricaoId, parecer, frequencia, sugestaoNota, username);
+
+            redirectAttributes.addFlashAttribute("sucesso", "Relatório final aprovado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/professor/relatorios/" + inscricaoId + "/avaliar";
         }
 
         return "redirect:/professor/ofertas";

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -23,4 +25,12 @@ public class RelatorioFinal {
     @OneToOne
     @JoinColumn(name = "inscricao_id", nullable = false)
     private Inscricao inscricao;
+
+    @Column(columnDefinition = "TEXT")
+    private String parecerSupervisor;
+
+    @Column(length = 1)
+    private String sugestaoNota;
+
+    private LocalDateTime dataHoraAvaliacao;
 }

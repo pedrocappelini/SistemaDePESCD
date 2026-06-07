@@ -9,6 +9,9 @@ import br.dsw.pescd.repository.PlanoTrabalhoRepository;
 import br.dsw.pescd.repository.ProfessorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import br.dsw.pescd.domain.RelatorioFinal;
+import br.dsw.pescd.repository.RelatorioFinalRepository;
+import java.util.Arrays;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +27,9 @@ public class ProfessorService {
 
     @Autowired
     private PlanoTrabalhoRepository planoTrabalhoRepository;
+
+    @Autowired
+    private RelatorioFinalRepository relatorioFinalRepository;
 
     public List<Inscricao> buscarInscricoesDoSupervisor(String username) {
         Professor professor = professorRepository.findByUsername(username);
@@ -63,6 +69,43 @@ public class ProfessorService {
         planoTrabalhoRepository.save(plano);
 
         inscricao.setStatus(StatusAlunoOferta.PLANO_APROVADO);
+        inscricaoRepository.save(inscricao);
+    }
+
+    public void aprovarRelatorioFinal(Long inscricaoId, String parecer, Integer frequencia, String sugestaoNota, String username) {
+        Professor professor = professorRepository.findByUsername(username);
+        Inscricao inscricao = buscarInscricaoPorId(inscricaoId);
+
+        if (!inscricao.getProfessorSupervisor().equals(professor)) {
+            throw new IllegalArgumentException("Você não é o supervisor responsável por este aluno.");
+        }
+
+        if (inscricao.getStatus() != StatusAlunoOferta.RELATORIO_ENVIADO) {
+            throw new IllegalArgumentException("O relatório final não está com status 'enviado' para ser avaliado.");
+        }
+
+        if (parecer == null || parecer.isBlank()) {
+            throw new IllegalArgumentException("O campo Parecer é obrigatório.");
+        }
+
+        if (frequencia == null || frequencia < 0 || frequencia > 100) {
+            throw new IllegalArgumentException("A frequência deve ser um valor válido entre 0 e 100.");
+        }
+
+        if (sugestaoNota == null || !Arrays.asList("A", "B", "C", "D", "E").contains(sugestaoNota.toUpperCase())) {
+            throw new IllegalArgumentException("A sugestão de nota deve ser A, B, C, D ou E.");
+        }
+
+        RelatorioFinal relatorio = relatorioFinalRepository.findByInscricao(inscricao)
+                .orElseThrow(() -> new IllegalArgumentException("Relatório final não encontrado no banco de dados."));
+
+        relatorio.setParecerSupervisor(parecer);
+        relatorio.setFrequencia(frequencia);
+        relatorio.setSugestaoNota(sugestaoNota.toUpperCase());
+        relatorio.setDataHoraAvaliacao(LocalDateTime.now());
+        relatorioFinalRepository.save(relatorio);
+
+        inscricao.setStatus(StatusAlunoOferta.RELATORIO_APROVADO_SUPERVISOR);
         inscricaoRepository.save(inscricao);
     }
 }
