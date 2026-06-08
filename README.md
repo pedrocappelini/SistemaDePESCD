@@ -55,7 +55,6 @@ The app becomes available at `http://localhost:8080`. Test users are seeded auto
 
 ## Team
 
-- **Yohan Duarte**
 - **Pedro Cappelini**
 - **Gustavo Bragaia**
 - **Caio Miyashi Ishii**
