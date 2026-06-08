@@ -22,6 +22,10 @@
 
     <h1>Minhas Ofertas</h1>
 
+    <div style="margin-bottom: 20px;">
+        <a th:href="@{/aluno/historico}" class="btn-secundario">Ver meu histórico no PESCD</a>
+    </div>
+
     <div th:if="${#lists.isEmpty(inscricoes)}" class="alert-info">
         Você não está inscrito em nenhuma oferta no momento.
     </div>

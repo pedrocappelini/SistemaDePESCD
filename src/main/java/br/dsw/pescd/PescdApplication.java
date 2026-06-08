@@ -3,6 +3,7 @@ package br.dsw.pescd;
 import br.dsw.pescd.domain.*;
 import br.dsw.pescd.enums.StatusAlunoOferta;
 import br.dsw.pescd.enums.StatusOferta;
+import br.dsw.pescd.enums.TipoConclusao;
 import br.dsw.pescd.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -21,7 +22,7 @@ public class PescdApplication {
 
     // Inicialização de dados para testar o funcionamento do banco de dados e as estórias implementadas
     @Bean
-    public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo, PlanoTrabalhoRepository planoRepo, RelatorioFinalRepository relatorioRepo, DocumentacaoRepository docRepo) {
+    public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo, PlanoTrabalhoRepository planoRepo, RelatorioFinalRepository relatorioRepo, DocumentacaoRepository docRepo,     AvaliacaoResponsavelRepository avaliacaoRepo) {
         return args -> {
             // --- 1. CADASTRO DE USUÁRIOS BASE ---
 
@@ -113,6 +114,17 @@ public class PescdApplication {
             inscricaoAnaPassada.setProfessorSupervisor(profResponsavel);
             inscricaoAnaPassada.setStatus(StatusAlunoOferta.CONCLUIDO_RESPONSAVEL);
             inscRepo.save(inscricaoAnaPassada);
+
+            AvaliacaoResponsavel avaliacaoAnaPassada = new AvaliacaoResponsavel();
+            avaliacaoAnaPassada.setInscricao(inscricaoAnaPassada);
+            avaliacaoAnaPassada.setProfessorResponsavel(profSupervisor); // Maria (PR da ofertaPassada)
+            avaliacaoAnaPassada.setParecer("Excelente desempenho. Aluna demonstrou domínio do conteúdo " +
+                    "e dedicação durante todo o semestre.");
+            avaliacaoAnaPassada.setFrequencia(95);
+            avaliacaoAnaPassada.setNota("A");
+            avaliacaoAnaPassada.setTipo(TipoConclusao.RELATORIO);
+            avaliacaoAnaPassada.setDataHoraAvaliacao(LocalDateTime.now().minusMonths(5));
+            avaliacaoRepo.save(avaliacaoAnaPassada);
 
             // --- 4. CENÁRIOS PRONTOS PRA TESTAR PR.01 E PR.02 ---
 
