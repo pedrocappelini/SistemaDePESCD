@@ -120,7 +120,7 @@ public class AlunoController {
 
             model.addAttribute("inscricao", inscricao);
 
-            return "aluno/enviar-documentacao"; // Você precisará criar essa view HTML
+            return "aluno/enviar-documentacao";
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());

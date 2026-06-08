@@ -177,7 +177,7 @@ h1 {
     color: #721c24;
     margin-bottom: 20px;
 }
-/* Tabela padrão (usada nas listas de alunos/ofertas) */
+
 .tabela-padrao {
     width: 100%;
     border-collapse: collapse;
@@ -211,13 +211,11 @@ h1 {
     border-bottom: none;
 }
 
-/* Botão pequeno (pra usar dentro das tabelas) */
 .btn-sm {
     padding: 6px 14px;
     font-size: 0.85em;
 }
 
-/* Texto cinza secundário */
 .texto-mutado {
     color: #888;
     font-style: italic;
