@@ -3,6 +3,7 @@ package br.dsw.pescd.repository;
 import br.dsw.pescd.domain.Aluno;
 import br.dsw.pescd.domain.Inscricao;
 import br.dsw.pescd.domain.Oferta;
+import br.dsw.pescd.domain.Professor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +20,7 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
     List<Inscricao> findByOferta(Oferta oferta);
 
     List<Inscricao> findByProfessorSupervisor(br.dsw.pescd.domain.Professor professorSupervisor);
+
+    List<Inscricao> findByOferta_ProfessorResponsavel(Professor professorResponsavel);
+
 }

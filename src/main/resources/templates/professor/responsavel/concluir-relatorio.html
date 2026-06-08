@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Concluir Relatório - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - Professor Responsável</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+    <h1>Concluir Relatório do Estágio</h1>
+
+    <div class="info-card">
+        <h3>Dados do Aluno</h3>
+        <p><strong>Nome:</strong> <span th:text="${inscricao.aluno.nomeCompleto}">Aluno</span></p>
+        <p><strong>RA:</strong> <span th:text="${inscricao.aluno.RA}">RA</span></p>
+        <p><strong>Status:</strong>
+            <span class="badge" th:classappend="'status-' + ${inscricao.status.name()}"
+                  th:text="${inscricao.status}">Status</span></p>
+
+        <hr style="margin: 15px 0;">
+
+        <h3>Plano de Trabalho [AL.02]</h3>
+        <p><strong>Disciplina:</strong>
+            <span th:text="${plano.codigoDisciplina} + ' - ' + ${plano.nomeDisciplina}"></span></p>
+        <p><strong>Curso:</strong> <span th:text="${plano.cursoDisciplina}"></span></p>
+        <p><strong>Arquivo:</strong>
+            <a th:href="@{'/uploads/' + ${plano.nomeArquivo}}" target="_blank">Visualizar Plano (PDF)</a></p>
+        <p><strong>Aprovado pelo supervisor em:</strong>
+            <span th:text="${#temporals.format(plano.dataHoraAvaliacao, 'dd/MM/yyyy HH:mm')}"></span></p>
+        <p><strong>Parecer do supervisor:</strong></p>
+        <p style="font-style: italic;" th:text="${plano.parecerSupervisor}"></p>
+
+        <hr style="margin: 15px 0;">
+
+        <h3>Relatório Final [AL.04]</h3>
+        <p><strong>Arquivo:</strong>
+            <a th:href="@{'/uploads/' + ${relatorio.nomeArquivo}}" target="_blank">Visualizar Relatório (PDF)</a></p>
+
+        <hr style="margin: 15px 0;">
+
+        <h3>Avaliação do Supervisor [PS.03]</h3>
+        <p><strong>Frequência sugerida:</strong> <span th:text="${relatorio.frequencia} + '%'"></span></p>
+        <p><strong>Nota sugerida:</strong> <span th:text="${relatorio.sugestaoNota}"></span></p>
+        <p><strong>Parecer:</strong></p>
+        <p style="font-style: italic;" th:text="${relatorio.parecerSupervisor}"></p>
+        <p><strong>Avaliado em:</strong>
+            <span th:text="${#temporals.format(relatorio.dataHoraAvaliacao, 'dd/MM/yyyy HH:mm')}"></span></p>
+    </div>
+
+    <form th:action="@{/professor/responsavel/relatorios/{id}/concluir(id=${inscricao.id})}"
+          method="post" class="form-card" style="margin-top: 20px;">
+
+        <h3 style="color: #003366; margin-bottom: 15px;">Sua Avaliação Final</h3>
+
+        <div class="form-grupo">
+            <label for="frequencia">Frequência Final (%) <span class="obrigatorio">*</span></label>
+            <input type="number" id="frequencia" name="frequencia"
+                   th:value="${relatorio.frequencia}" required min="0" max="100"/>
+            <small>Valor sugerido pelo supervisor — pode alterar.</small>
+        </div>
+
+        <div class="form-grupo">
+            <label for="nota">Nota Final <span class="obrigatorio">*</span></label>
+            <select id="nota" name="nota" required>
+                <option value="A" th:selected="${relatorio.sugestaoNota == 'A'}">A</option>
+                <option value="B" th:selected="${relatorio.sugestaoNota == 'B'}">B</option>
+                <option value="C" th:selected="${relatorio.sugestaoNota == 'C'}">C</option>
+                <option value="D" th:selected="${relatorio.sugestaoNota == 'D'}">D</option>
+                <option value="E" th:selected="${relatorio.sugestaoNota == 'E'}">E</option>
+            </select>
+            <small>Nota sugerida pelo supervisor — pode alterar.</small>
+        </div>
+
+        <div class="form-grupo">
+            <label for="parecer">Parecer do Responsável <span class="obrigatorio">*</span></label>
+            <textarea id="parecer" name="parecer" rows="5" required
+                      placeholder="Insira seu parecer final sobre o estágio..."
+                      style="width: 100%; padding: 10px;"></textarea>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn-primario">Aprovar</button>
+            <a th:href="@{/professor/responsavel/dashboard}" class="btn-secundario">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

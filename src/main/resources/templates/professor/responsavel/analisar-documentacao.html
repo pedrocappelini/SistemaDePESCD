@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Analisar Documentação - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - Professor Responsável</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+    <h1>Analisar Documentação de Aulas Ministradas</h1>
+
+    <div class="info-card">
+        <h3>Dados do Aluno</h3>
+        <p><strong>Nome:</strong> <span th:text="${inscricao.aluno.nomeCompleto}">Aluno</span></p>
+        <p><strong>RA:</strong> <span th:text="${inscricao.aluno.RA}">RA</span></p>
+        <p><strong>Status:</strong>
+            <span class="badge" th:classappend="'status-' + ${inscricao.status.name()}"
+                  th:text="${inscricao.status}">Status</span></p>
+
+        <hr style="margin: 15px 0;">
+
+        <h3>Documentação Enviada [AL.03]</h3>
+        <p><strong>Instituição:</strong> <span th:text="${documentacao.instituicao}"></span></p>
+        <p><strong>Disciplina:</strong> <span th:text="${documentacao.nomeDisciplina}"></span></p>
+        <p><strong>Curso:</strong> <span th:text="${documentacao.cursoDisciplina}"></span></p>
+        <p><strong>Carga horária:</strong>
+            <span th:text="${documentacao.cargaHoraria} + ' horas'"></span></p>
+        <p><strong>Documento comprobatório:</strong>
+            <a th:href="@{'/uploads/' + ${documentacao.nomeArquivo}}" target="_blank">Visualizar (PDF)</a></p>
+    </div>
+
+    <form th:action="@{/professor/responsavel/documentacoes/{id}/analisar(id=${inscricao.id})}"
+          method="post" class="form-card" style="margin-top: 20px;">
+
+        <h3 style="color: #003366; margin-bottom: 15px;">Sua Avaliação</h3>
+
+        <div class="form-grupo">
+            <label for="frequencia">Frequência (%) <span class="obrigatorio">*</span></label>
+            <input type="number" id="frequencia" name="frequencia" required
+                   min="0" max="100" placeholder="0 a 100"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="nota">Nota <span class="obrigatorio">*</span></label>
+            <select id="nota" name="nota" required>
+                <option value="">-- Selecione --</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+            </select>
+        </div>
+
+        <div class="form-grupo">
+            <label for="parecer">Parecer <span class="obrigatorio">*</span></label>
+            <textarea id="parecer" name="parecer" rows="5" required
+                      placeholder="Insira seu parecer sobre a documentação apresentada..."
+                      style="width: 100%; padding: 10px;"></textarea>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn-primario">Finalizar</button>
+            <a th:href="@{/professor/responsavel/dashboard}" class="btn-secundario">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

@@ -19,7 +19,7 @@ public class LoginController {
             switch (authority.getAuthority()) {
                 case "ROLE_ALUNO":         return "redirect:/aluno/ofertas";
                 case "ROLE_SECRETARIO":    return "redirect:/secretario/ofertas";
-                case "ROLE_PROFESSOR":     return "redirect:/professor/ofertas";
+                case "ROLE_PROFESSOR":     return "redirect:/professor";
                 case "ROLE_ADMINISTRADOR": return "redirect:/admin/usuarios";
             }
         }

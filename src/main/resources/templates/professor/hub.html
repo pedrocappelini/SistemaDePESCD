@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Bem-vindo - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - Professor</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+    <h1>Bem-vindo ao PESCD</h1>
+    <p style="color: #666; margin-bottom: 30px;">
+        O perfil Professor cobre os casos de Professor Supervisor e Professor Responsável.
+        Um mesmo docente pode acumular as duas responsabilidades. Selecione abaixo em qual papel deseja atuar.
+    </p>
+
+    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+
+        <a th:href="@{/professor/ofertas}"
+           style="flex: 1; min-width: 280px; background: white; padding: 30px;
+                  border-radius: 8px; border: 2px solid #ddd; text-decoration: none;
+                  color: #333; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+                  transition: all 0.2s; display: block;">
+            <h2 style="color: #003366; margin-bottom: 10px;">Minhas Supervisões</h2>
+            <p style="color: #666; margin: 0;">
+                Avaliar planos de trabalho e relatórios finais dos alunos sob sua supervisão.
+            </p>
+        </a>
+
+        <a th:href="@{/professor/responsavel/dashboard}"
+           style="flex: 1; min-width: 280px; background: white; padding: 30px;
+                  border-radius: 8px; border: 2px solid #ddd; text-decoration: none;
+                  color: #333; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+                  transition: all 0.2s; display: block;">
+            <h2 style="color: #003366; margin-bottom: 10px;">Minhas Ofertas (Responsável)</h2>
+            <p style="color: #666; margin: 0;">
+                Concluir avaliações finais de alunos em ofertas onde você é o responsável.
+            </p>
+        </a>
+
+    </div>
+</main>
+</body>
+</html>

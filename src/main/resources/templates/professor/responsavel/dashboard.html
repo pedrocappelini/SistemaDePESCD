@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Responsável - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - Professor Responsável</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+    <h1>Painel do Responsável</h1>
+
+    <div th:if="${sucesso}" class="alert-sucesso" th:text="${sucesso}"></div>
+    <div th:if="${erro}" class="alert-erro" th:text="${erro}"></div>
+
+    <div th:if="${#maps.isEmpty(inscricoesPorOferta)}">
+        <p>Você não é Professor Responsável de nenhuma oferta no momento.</p>
+    </div>
+
+    <div th:each="entry : ${inscricoesPorOferta}" class="info-card" style="margin-bottom: 25px;">
+        <h3>Oferta: <span th:text="${entry.key.nome}">Nome</span>
+            (<span th:text="${entry.key.semestre}">Semestre</span>)</h3>
+        <p><strong>Status da Oferta:</strong>
+            <span th:text="${entry.key.status}">Status</span></p>
+
+        <h4 style="margin-top: 15px;">Alunos da Oferta</h4>
+        <table class="tabela-padrao">
+            <thead>
+            <tr>
+                <th>RA</th>
+                <th>Nome do Aluno</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="inscricao : ${entry.value}">
+                <td th:text="${inscricao.aluno.RA}">RA</td>
+                <td th:text="${inscricao.aluno.nomeCompleto}">Nome</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="'status-' + ${inscricao.status.name()}"
+                          th:text="${inscricao.status}">Status</span>
+                </td>
+                <td>
+                    <a th:if="${inscricao.status.name() == 'RELATORIO_APROVADO_SUPERVISOR'}"
+                       th:href="@{/professor/responsavel/relatorios/{id}/concluir(id=${inscricao.id})}"
+                       class="btn-primario btn-sm">Concluir Relatório</a>
+
+                    <a th:if="${inscricao.status.name() == 'DOCUMENTACAO_ENVIADA'}"
+                       th:href="@{/professor/responsavel/documentacoes/{id}/analisar(id=${inscricao.id})}"
+                       class="btn-primario btn-sm">Analisar Documentação</a>
+
+                    <span th:if="${inscricao.status.name() != 'RELATORIO_APROVADO_SUPERVISOR'
+                                  and inscricao.status.name() != 'DOCUMENTACAO_ENVIADA'}"
+                          class="texto-mutado">Sem ações pendentes</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

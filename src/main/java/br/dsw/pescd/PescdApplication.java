@@ -21,7 +21,7 @@ public class PescdApplication {
 
     // Inicialização de dados para testar o funcionamento do banco de dados e as estórias implementadas
     @Bean
-    public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo) {
+    public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo, PlanoTrabalhoRepository planoRepo, RelatorioFinalRepository relatorioRepo, DocumentacaoRepository docRepo) {
         return args -> {
             // --- 1. CADASTRO DE USUÁRIOS BASE ---
 
@@ -113,6 +113,72 @@ public class PescdApplication {
             inscricaoAnaPassada.setProfessorSupervisor(profResponsavel);
             inscricaoAnaPassada.setStatus(StatusAlunoOferta.CONCLUIDO_RESPONSAVEL);
             inscRepo.save(inscricaoAnaPassada);
+
+            // --- 4. CENÁRIOS PRONTOS PRA TESTAR PR.01 E PR.02 ---
+
+            // Aluno extra 1 — pronto pra PR.01 (RELATORIO_APROVADO_SUPERVISOR)
+            Aluno aluno3 = new Aluno();
+            aluno3.setNomeCompleto("Carlos Relatorio Pronto");
+            aluno3.setEmail("carlos@estudante.ufscar.br");
+            aluno3.setUsername("carlos.aluno");
+            aluno3.setRA("445566");
+            aluno3.setSenha("carlos1");
+            usuarioRepo.save(aluno3);
+
+            // Inscrição do Carlos na oferta atual, supervisor = Maria
+            Inscricao inscCarlos = new Inscricao();
+            inscCarlos.setAluno(aluno3);
+            inscCarlos.setOferta(ofertaAtual);
+            inscCarlos.setProfessorSupervisor(profSupervisor);
+            inscCarlos.setStatus(StatusAlunoOferta.RELATORIO_APROVADO_SUPERVISOR);
+            inscRepo.save(inscCarlos);
+
+            // PlanoTrabalho do Carlos (já avaliado pela Maria)
+            PlanoTrabalho planoCarlos = new PlanoTrabalho();
+            planoCarlos.setInscricao(inscCarlos);
+            planoCarlos.setCodigoDisciplina("DC100");
+            planoCarlos.setNomeDisciplina("Algoritmos e Estruturas de Dados");
+            planoCarlos.setCursoDisciplina("Bacharelado em Ciência da Computação");
+            planoCarlos.setNomeArquivo("plano_1_1780779000479.pdf"); // reaproveita PDF já existente em /uploads
+            planoCarlos.setParecerSupervisor("Plano coerente e bem estruturado. Aprovado.");
+            planoCarlos.setDataHoraAvaliacao(LocalDateTime.now().minusDays(60));
+            planoRepo.save(planoCarlos);
+
+            // RelatorioFinal do Carlos (já avaliado pela Maria)
+            RelatorioFinal relCarlos = new RelatorioFinal();
+            relCarlos.setInscricao(inscCarlos);
+            relCarlos.setNomeArquivo("relatorio_1_1780808894398.pdf"); // PDF já existente
+            relCarlos.setFrequencia(95);
+            relCarlos.setSugestaoNota("A");
+            relCarlos.setParecerSupervisor("Excelente desempenho. Aluno demonstrou domínio do conteúdo.");
+            relCarlos.setDataHoraAvaliacao(LocalDateTime.now().minusDays(5));
+            relatorioRepo.save(relCarlos);
+
+            // Aluno extra 2 — pronto pra PR.02 (DOCUMENTACAO_ENVIADA)
+            Aluno aluno4 = new Aluno();
+            aluno4.setNomeCompleto("Beatriz Já Lecionou");
+            aluno4.setEmail("beatriz@estudante.ufscar.br");
+            aluno4.setUsername("bia.aluno");
+            aluno4.setRA("778899");
+            aluno4.setSenha("bia1");
+            usuarioRepo.save(aluno4);
+
+            Inscricao inscBia = new Inscricao();
+            inscBia.setAluno(aluno4);
+            inscBia.setOferta(ofertaAtual);
+            // Bia NÃO tem supervisor porque foi pelo caminho da documentação direto
+            inscBia.setStatus(StatusAlunoOferta.DOCUMENTACAO_ENVIADA);
+            inscRepo.save(inscBia);
+
+            Documentacao docBia = new Documentacao();
+            docBia.setInscricao(inscBia);
+            docBia.setInstituicao("Universidade Federal de São Carlos");
+            docBia.setNomeDisciplina("Introdução à Programação");
+            docBia.setCursoDisciplina("Engenharia Civil");
+            docBia.setCargaHoraria(60);
+            docBia.setNomeArquivo("doc_ensino_1_1780781498421.pdf"); // PDF já existente
+            docRepo.save(docBia);
+
         };
     }
 }
