@@ -44,8 +44,18 @@
             <td th:text="${oferta.nome}">PESCD - 2026/1</td>
             <td th:text="${oferta.semestre}">2026/1</td>
             <td th:text="${oferta.status}">EM_ANDAMENTO</td>
-            <td>
+            <td style="display: flex; gap: 10px; align-items: center;">
+                <a th:href="@{/secretario/ofertas/{id}/acompanhar(id=${oferta.id})}" class="btn-primario">Acompanhar</a>
                 <a th:href="@{/secretario/ofertas/{id}/alunos(id=${oferta.id})}" class="btn-secundario">Gerenciar Alunos</a>
+
+                <form th:if="${oferta.status.name() == 'EM_ANDAMENTO'}"
+                      th:action="@{/secretario/ofertas/{id}/encerrar(id=${oferta.id})}"
+                      method="post" style="display:inline; margin:0;">
+                    <button type="submit" class="btn-secundario" style="background-color: #dc3545; color: white;"
+                            onclick="return confirm('Tem certeza que deseja encerrar esta oferta? Isso finalizará o processo e os créditos serão atribuídos.')">
+                        Encerrar
+                    </button>
+                </form>
             </td>
         </tr>
         </tbody>

@@ -29,11 +29,8 @@ public class SecretarioController {
 
     @GetMapping("/ofertas/nova")
     public String exibirFormulario(Model model) {
-
         model.addAttribute("oferta", new Oferta());
-
         model.addAttribute("professores", professorService.listarProfessores());
-
         return "secretario/criar-oferta";
     }
 
@@ -41,7 +38,6 @@ public class SecretarioController {
     public String gerenciarAlunos(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
         try {
             Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
-
             List<Inscricao> inscricoes = inscricaoService.listarInscricoesDaOferta(ofertaId);
 
             model.addAttribute("oferta", oferta);
@@ -55,20 +51,34 @@ public class SecretarioController {
         }
     }
 
+    @GetMapping("/ofertas/{id}/acompanhar")
+    public String acompanharOferta(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
+            List<Inscricao> inscricoes = inscricaoService.listarInscricoesDaOferta(ofertaId);
+
+            model.addAttribute("oferta", oferta);
+            model.addAttribute("inscricoes", inscricoes);
+
+            return "secretario/acompanhar-oferta";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/secretario/ofertas";
+        }
+    }
+
     @PostMapping("/ofertas/nova")
     public String criarOferta(
             @ModelAttribute Oferta oferta,
             @RequestParam("professorId") Long professorId,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
-
         try {
             String username = authentication.getName();
             ofertaService.criarOferta(oferta, professorId, username);
-
             redirectAttributes.addFlashAttribute("sucesso", "Oferta criada com sucesso!");
             return "redirect:/secretario/ofertas";
-
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
             return "redirect:/secretario/ofertas/nova";
@@ -80,7 +90,6 @@ public class SecretarioController {
             @PathVariable("id") Long ofertaId,
             @RequestParam("arquivoCsv") MultipartFile arquivoCsv,
             RedirectAttributes redirectAttributes) {
-
         try {
             inscricaoService.adicionarAlunosPorCsv(ofertaId, arquivoCsv);
             redirectAttributes.addFlashAttribute("sucesso", "Arquivo CSV processado. Alunos adicionados à oferta!");
@@ -89,7 +98,6 @@ public class SecretarioController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", "Erro inesperado ao ler o arquivo CSV. Verifique a formatação.");
         }
-
         return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
     }
 
@@ -98,14 +106,12 @@ public class SecretarioController {
             @PathVariable("id") Long ofertaId,
             @RequestParam("email") String email,
             RedirectAttributes redirectAttributes) {
-
         try {
             inscricaoService.adicionarAlunoExistente(ofertaId, email);
             redirectAttributes.addFlashAttribute("sucesso", "Aluno existente adicionado com sucesso!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
         }
-
         return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
     }
 
@@ -116,15 +122,24 @@ public class SecretarioController {
             @RequestParam("nomeCompleto") String nomeCompleto,
             @RequestParam("email") String email,
             RedirectAttributes redirectAttributes) {
-
         try {
             inscricaoService.cadastrarNovoAlunoEMatricular(ofertaId, ra, nomeCompleto, email);
             redirectAttributes.addFlashAttribute("sucesso", "Novo aluno cadastrado e matriculado com sucesso!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
         }
-
         return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
+    }
+
+    @PostMapping("/ofertas/{id}/encerrar")
+    public String encerrarOferta(@PathVariable("id") Long ofertaId, RedirectAttributes redirectAttributes) {
+        try {
+            ofertaService.encerrarOferta(ofertaId);
+            redirectAttributes.addFlashAttribute("sucesso", "Oferta encerrada e concluída com sucesso!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
+        return "redirect:/secretario/ofertas";
     }
 
     @GetMapping("/ofertas")

@@ -54,4 +54,15 @@ public class OfertaService {
         return ofertaRepository.findById(ofertaId)
                 .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
     }
+
+    public void encerrarOferta(Long ofertaId) {
+        Oferta oferta = buscarOfertaPorId(ofertaId);
+
+        if (oferta.getStatus() != StatusOferta.EM_ANDAMENTO) {
+            throw new IllegalArgumentException("Apenas ofertas em andamento podem ser encerradas.");
+        }
+
+        oferta.setStatus(StatusOferta.CONCLUIDA);
+        ofertaRepository.save(oferta);
+    }
 }
