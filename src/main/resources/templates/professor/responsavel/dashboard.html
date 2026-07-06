@@ -29,10 +29,28 @@
     </div>
 
     <div th:each="entry : ${inscricoesPorOferta}" class="info-card" style="margin-bottom: 25px;">
-        <h3>Oferta: <span th:text="${entry.key.nome}">Nome</span>
-            (<span th:text="${entry.key.semestre}">Semestre</span>)</h3>
-        <p><strong>Status da Oferta:</strong>
-            <span th:text="${entry.key.status}">Status</span></p>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h3>Oferta: <span th:text="${entry.key.nome}">Nome</span>
+                    (<span th:text="${entry.key.semestre}">Semestre</span>)</h3>
+                <p><strong>Status da Oferta:</strong>
+                    <span th:text="${entry.key.status}">Status</span></p>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a th:href="@{/professor/responsavel/ofertas/{id}/acompanhar(id=${entry.key.id})}" class="btn-secundario">Acompanhar Oferta</a>
+
+                <form th:if="${entry.key.status.name() == 'EM_ANDAMENTO'}"
+                      th:action="@{/professor/responsavel/ofertas/{id}/encerrar(id=${entry.key.id})}"
+                      method="post" style="margin: 0;">
+                    <button type="submit" class="btn-primario" style="background-color: #ff9800; color: white;"
+                            onclick="return confirm('Deseja sinalizar o encerramento desta oferta? A secretaria será responsável por finalizá-la.')">
+                        Encerrar Oferta
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <h4 style="margin-top: 15px;">Alunos da Oferta</h4>
         <table class="tabela-padrao">

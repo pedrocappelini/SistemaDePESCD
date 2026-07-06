@@ -9,6 +9,8 @@ import br.dsw.pescd.repository.DocumentacaoRepository;
 import br.dsw.pescd.repository.PlanoTrabalhoRepository;
 import br.dsw.pescd.repository.RelatorioFinalRepository;
 import br.dsw.pescd.service.ProfessorResponsavelService;
+import br.dsw.pescd.service.OfertaService;
+import br.dsw.pescd.service.InscricaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -36,6 +38,11 @@ public class ProfessorResponsavelController {
     @Autowired
     private DocumentacaoRepository documentacaoRepository;
 
+    @Autowired
+    private OfertaService ofertaService;
+
+    @Autowired
+    private InscricaoService inscricaoService;
 
     @GetMapping("/dashboard")
     public String dashboard(Authentication authentication, Model model) {
@@ -51,8 +58,33 @@ public class ProfessorResponsavelController {
         return "professor/responsavel/dashboard";
     }
 
+    @GetMapping("/ofertas/{id}/acompanhar")
+    public String acompanharOferta(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
+            List<Inscricao> inscricoes = inscricaoService.listarInscricoesDaOferta(ofertaId);
 
-    // ===== PR.01 — Concluir relatório do estágio =====
+            model.addAttribute("oferta", oferta);
+            model.addAttribute("inscricoes", inscricoes);
+
+            return "professor/responsavel/acompanhar-oferta";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/professor/responsavel/dashboard";
+        }
+    }
+
+    @PostMapping("/ofertas/{id}/encerrar")
+    public String solicitarEncerramentoOferta(@PathVariable("id") Long ofertaId, RedirectAttributes redirectAttributes) {
+        try {
+            ofertaService.solicitarEncerramento(ofertaId);
+            redirectAttributes.addFlashAttribute("sucesso", "Oferta encaminhada para encerramento pela Secretaria!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        }
+        return "redirect:/professor/responsavel/dashboard";
+    }
 
     @GetMapping("/relatorios/{inscricaoId}/concluir")
     public String exibirFormularioConclusao(
@@ -103,9 +135,6 @@ public class ProfessorResponsavelController {
 
         return "redirect:/professor/responsavel/dashboard";
     }
-
-
-    // ===== PR.02 — Analisar documentação =====
 
     @GetMapping("/documentacoes/{inscricaoId}/analisar")
     public String exibirFormularioAnalise(

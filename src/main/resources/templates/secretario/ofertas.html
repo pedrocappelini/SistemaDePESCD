@@ -48,7 +48,7 @@
                 <a th:href="@{/secretario/ofertas/{id}/acompanhar(id=${oferta.id})}" class="btn-primario">Acompanhar</a>
                 <a th:href="@{/secretario/ofertas/{id}/alunos(id=${oferta.id})}" class="btn-secundario">Gerenciar Alunos</a>
 
-                <form th:if="${oferta.status.name() == 'EM_ANDAMENTO'}"
+                <form th:if="${oferta.status.name() == 'EM_ANDAMENTO' or oferta.status.name() == 'AGUARDANDO_ENCERRAMENTO'}"
                       th:action="@{/secretario/ofertas/{id}/encerrar(id=${oferta.id})}"
                       method="post" style="display:inline; margin:0;">
                     <button type="submit" class="btn-secundario" style="background-color: #dc3545; color: white;"
