@@ -27,26 +27,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/js/**").permitAll() // arquivos estáticos
-                .requestMatchers("/login").permitAll()            // tela de login
-                .requestMatchers("/aluno/**").hasRole("ALUNO")    // só alunos
-                .requestMatchers("/secretario/**").hasRole("SECRETARIO")
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")           // nossa tela de login
-                .defaultSuccessUrl("/login/redirecionar", true)
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/login")
-                .permitAll()
-            );
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/css/**", "/js/**").permitAll()
+                        .requestMatchers("/login", "/ofertas-publicas").permitAll()
+                        .requestMatchers("/aluno/**").hasRole("ALUNO")
+                        .requestMatchers("/secretario/**").hasRole("SECRETARIO")
+                        .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/professor/**").hasRole("PROFESSOR")
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/login/redirecionar", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login")
+                        .permitAll()
+                );
 
         return http.build();
     }
-
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -59,9 +60,9 @@ public class SecurityConfig {
             String role = "ROLE_" + usuario.getClass().getSimpleName().toUpperCase();
 
             return new org.springframework.security.core.userdetails.User(
-                usuario.getUsername(),
-                usuario.getSenha(),
-                List.of(new SimpleGrantedAuthority(role))
+                    usuario.getUsername(),
+                    usuario.getSenha(),
+                    List.of(new SimpleGrantedAuthority(role))
             );
         };
     }
