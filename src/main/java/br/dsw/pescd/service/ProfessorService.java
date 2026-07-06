@@ -44,6 +44,20 @@ public class ProfessorService {
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição não encontrada."));
     }
 
+    public Inscricao buscarInscricaoDoSupervisor(Long id, String username) {
+        Professor professor = professorRepository.findByUsername(username);
+        if (professor == null) {
+            throw new IllegalArgumentException("Professor não encontrado.");
+        }
+
+        Inscricao inscricao = buscarInscricaoPorId(id);
+        if (inscricao.getProfessorSupervisor() == null || !inscricao.getProfessorSupervisor().equals(professor)) {
+            throw new IllegalArgumentException("Você não é o supervisor responsável por este aluno.");
+        }
+
+        return inscricao;
+    }
+
     public void aprovarPlanoDeTrabalho(Long inscricaoId, String parecer, String username) {
         Professor professor = professorRepository.findByUsername(username);
 

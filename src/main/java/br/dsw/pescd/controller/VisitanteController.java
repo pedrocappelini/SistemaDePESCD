@@ -1,20 +1,29 @@
 package br.dsw.pescd.controller;
 
+import br.dsw.pescd.dto.ApiDtos.OfertaResponse;
+import br.dsw.pescd.dto.ApiMapper;
+import br.dsw.pescd.service.InscricaoService;
 import br.dsw.pescd.service.OfertaService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+import java.util.List;
+
+@RestController
 public class VisitanteController {
 
-    @Autowired
-    private OfertaService ofertaService;
+    private final OfertaService ofertaService;
+    private final InscricaoService inscricaoService;
 
-    @GetMapping("/ofertas-publicas")
-    public String listarOfertasPublicas(Model model) {
-        model.addAttribute("ofertas", ofertaService.listarTodasOfertas());
-        return "ofertas-publicas";
+    public VisitanteController(OfertaService ofertaService, InscricaoService inscricaoService) {
+        this.ofertaService = ofertaService;
+        this.inscricaoService = inscricaoService;
+    }
+
+    @GetMapping("/api/ofertas-publicas")
+    public List<OfertaResponse> listarOfertasPublicas() {
+        return ofertaService.listarTodasOfertas().stream()
+                .map(oferta -> ApiMapper.oferta(oferta, inscricaoService.listarInscricoesDaOferta(oferta.getId()).size()))
+                .toList();
     }
 }

@@ -1,13 +1,19 @@
 package br.dsw.pescd.controller;
 
+import br.dsw.pescd.domain.Documentacao;
 import br.dsw.pescd.domain.Inscricao;
 import br.dsw.pescd.domain.PlanoTrabalho;
+import br.dsw.pescd.domain.RelatorioFinal;
 import br.dsw.pescd.dto.HistoricoItemDTO;
 import br.dsw.pescd.dto.ApiDtos.AlunoOfertaResponse;
+import br.dsw.pescd.dto.ApiDtos.DocumentacaoResponse;
 import br.dsw.pescd.dto.ApiDtos.PlanoResponse;
 import br.dsw.pescd.dto.ApiDtos.ProgressoResponse;
+import br.dsw.pescd.dto.ApiDtos.RelatorioResponse;
 import br.dsw.pescd.dto.ApiMapper;
+import br.dsw.pescd.repository.DocumentacaoRepository;
 import br.dsw.pescd.repository.PlanoTrabalhoRepository;
+import br.dsw.pescd.repository.RelatorioFinalRepository;
 import br.dsw.pescd.service.HistoricoService;
 import br.dsw.pescd.service.InscricaoService;
 import br.dsw.pescd.service.SubmissaoService;
@@ -33,17 +39,23 @@ public class AlunoController {
     private final SubmissaoService submissaoService;
     private final PlanoTrabalhoRepository planoTrabalhoRepository;
     private final HistoricoService historicoService;
+    private final DocumentacaoRepository documentacaoRepository;
+    private final RelatorioFinalRepository relatorioFinalRepository;
 
     public AlunoController(
             InscricaoService inscricaoService,
             SubmissaoService submissaoService,
             PlanoTrabalhoRepository planoTrabalhoRepository,
-            HistoricoService historicoService
+            HistoricoService historicoService,
+            DocumentacaoRepository documentacaoRepository,
+            RelatorioFinalRepository relatorioFinalRepository
     ) {
         this.inscricaoService = inscricaoService;
         this.submissaoService = submissaoService;
         this.planoTrabalhoRepository = planoTrabalhoRepository;
         this.historicoService = historicoService;
+        this.documentacaoRepository = documentacaoRepository;
+        this.relatorioFinalRepository = relatorioFinalRepository;
     }
 
     @GetMapping("/ofertas")
@@ -101,5 +113,53 @@ public class AlunoController {
                 .orElseThrow(() -> new IllegalArgumentException("Plano nao encontrado."));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiMapper.plano(plano));
+    }
+
+    @PostMapping(value = "/ofertas/{ofertaId}/documentacao", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentacaoResponse> enviarDocumentacao(
+            @PathVariable Long ofertaId,
+            @RequestParam String instituicao,
+            @RequestParam String nomeDisciplina,
+            @RequestParam String cursoDisciplina,
+            @RequestParam Integer cargaHoraria,
+            @RequestParam MultipartFile arquivo,
+            Authentication authentication
+    ) throws Exception {
+        submissaoService.enviarDocumentacao(
+                authentication.getName(),
+                ofertaId,
+                instituicao,
+                nomeDisciplina,
+                cursoDisciplina,
+                cargaHoraria,
+                arquivo
+        );
+
+        Inscricao inscricao = inscricaoService.buscarInscricao(authentication.getName(), ofertaId);
+        Documentacao documentacao = documentacaoRepository.findByInscricao(inscricao)
+                .orElseThrow(() -> new IllegalArgumentException("Documentacao nao encontrada."));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiMapper.documentacao(documentacao));
+    }
+
+    @PostMapping(value = "/ofertas/{ofertaId}/relatorio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RelatorioResponse> enviarRelatorio(
+            @PathVariable Long ofertaId,
+            @RequestParam Integer frequencia,
+            @RequestParam MultipartFile arquivo,
+            Authentication authentication
+    ) throws Exception {
+        submissaoService.enviarRelatorioFinal(
+                authentication.getName(),
+                ofertaId,
+                frequencia,
+                arquivo
+        );
+
+        Inscricao inscricao = inscricaoService.buscarInscricao(authentication.getName(), ofertaId);
+        RelatorioFinal relatorio = relatorioFinalRepository.findByInscricao(inscricao)
+                .orElseThrow(() -> new IllegalArgumentException("Relatorio nao encontrado."));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiMapper.relatorio(relatorio));
     }
 }

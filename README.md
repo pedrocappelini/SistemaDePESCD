@@ -1,65 +1,96 @@
-# PESCD System
+# sistema de pescd
 
-> Web application that automates the credit workflow of UFSCar's Supervised Teaching Internship Program.
+api rest para controlar ofertas, alunos, professores, documentos e encerramento do pescd.
 
-![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-4-6DB33F?style=flat-square&logo=springboot&logoColor=white)
-![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=flat-square&logo=thymeleaf&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
-![Maven](https://img.shields.io/badge/Maven-C71A36?style=flat-square&logo=apachemaven&logoColor=white)
+## tecnologias
 
-## Overview
+- java 17
+- spring boot 4
+- spring security
+- spring data jpa
+- mysql
+- maven
 
-The **PESCD** (Supervised Teaching Internship Program) is a mandatory requirement for PhD students at UFSCar's Computer Science graduate program — between 2 and 3 semesters performing undergraduate teaching activities. The control of work plans, reports, and evaluations is currently handled manually.
+## como rodar
 
-This project fully automates that workflow, providing dedicated areas for each of the 5 user roles involved, full status-change traceability, PDF document uploads, and granular role-based access control.
+suba o mysql local e confira as credenciais em:
 
-## Roles and features
+```text
+src/main/resources/application.properties
+```
 
-| Role | Main features |
-|---|---|
-| **Visitor** | Public listing of active offerings and number of enrolled students |
-| **Student** | Submit work plan, supporting documentation, or final report; view participation history across semesters |
-| **Secretary** | Create offerings, manage enrollments (CRUD + CSV import), close offerings |
-| **Supervising Professor** | Approve work plans and final reports of supervised students |
-| **Responsible Professor** | Issue the final evaluation of the internship or documentation; close the offering |
-| **Administrator** | Manage users and roles |
+por padrao:
 
-## Tech stack
+```text
+banco: db_pescd
+usuario: root
+senha: root
+```
 
-**Backend**
-- Java 17 + Spring Boot 4
-- Spring MVC, Spring Data JPA, Spring Security
-- Thymeleaf + `thymeleaf-extras-springsecurity6`
-- MySQL 8 / Hibernate
-- Maven, Lombok
-
-**Frontend**
-- HTML5, CSS3, JavaScript
-
-**Architecture**: Classic MVC with clear separation across Controller → Service → Repository → Domain. Authorization checks performed at the Service layer for defense in depth. POST-Redirect-GET pattern applied to all forms.
-
-## Running locally
-
-Requires Java 17+, Maven, and MySQL.
+rode:
 
 ```bash
-# 1. Make sure MySQL is running — the db_pescd database is created automatically
-# 2. Adjust credentials in src/main/resources/application.properties if needed
-# 3. Build and run:
-
 ./mvnw spring-boot:run
 ```
 
-The app becomes available at `http://localhost:8080`. Test users are seeded automatically on startup — credentials can be found in `PescdApplication.java`.
+a api fica em:
 
-## Team
+```text
+http://localhost:8080
+```
 
-- **Pedro Cappelini**
-- **Gustavo Bragaia**
-- **Caio Miyashi Ishii**
-- **Felipe Betcher**
+## autenticacao
 
-## Academic context
+a api usa http basic.
 
-Project developed for the **Web Software Development I** course of the undergraduate Computer Science program at UFSCar, under the guidance of Prof. [André Takeshi Endo](https://www.lapes.ufscar.br/members/professors/andre-takeshi-endo).
+exemplo:
+
+```bash
+curl -u pedro.aluno:pedro1 http://localhost:8080/api/me
+```
+
+## usuarios de exemplo
+
+```text
+mario.admin:mario1
+lucas.sec:lucas1
+luis.prof:luis1
+maria.sup:maria1
+pedro.aluno:pedro1
+ana.aluno:ana1
+carlos.aluno:carlos1
+leonardo.aluno:leonardo1
+```
+
+## rotas principais
+
+```text
+get  /api/ofertas-publicas
+get  /api/me
+get  /api/aluno/ofertas
+get  /api/aluno/progresso
+post /api/aluno/ofertas/{ofertaid}/plano
+post /api/aluno/ofertas/{ofertaid}/documentacao
+post /api/aluno/ofertas/{ofertaid}/relatorio
+get  /api/professores
+get  /api/professor/ofertas
+get  /api/professor/responsavel/ofertas
+get  /api/secretario/ofertas
+post /api/secretario/ofertas
+get  /api/admin/usuarios
+post /api/admin/usuarios
+```
+
+## swagger
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+## observacao
+
+o banco e recriado ao iniciar porque a configuracao usa:
+
+```text
+spring.jpa.hibernate.ddl-auto=create
+```

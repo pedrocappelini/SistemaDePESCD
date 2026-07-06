@@ -30,7 +30,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
     }
 
-    public void salvarNovoUsuario(String tipo, String nomeCompleto, String email, String username, String senha) {
+    public Usuario salvarNovoUsuario(String tipo, String nomeCompleto, String email, String username, String senha) {
         Usuario usuario;
 
         switch (tipo.toUpperCase()) {
@@ -55,10 +55,10 @@ public class UsuarioService {
         usuario.setUsername(username);
         usuario.setSenha(passwordEncoder.encode(senha));
 
-        usuarioRepository.save(usuario);
+        return usuarioRepository.save(usuario);
     }
 
-    public void atualizarUsuario(Long id, String nomeCompleto, String email, String username, String senha) {
+    public Usuario atualizarUsuario(Long id, String nomeCompleto, String email, String username, String senha) {
         Usuario usuario = buscarPorId(id);
 
         usuario.setNomeCompleto(nomeCompleto);
@@ -69,7 +69,7 @@ public class UsuarioService {
             usuario.setSenha(passwordEncoder.encode(senha));
         }
 
-        usuarioRepository.save(usuario);
+        return usuarioRepository.save(usuario);
     }
 
     public void excluirUsuario(Long id) {

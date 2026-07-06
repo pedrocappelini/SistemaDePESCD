@@ -1,89 +1,96 @@
 package br.dsw.pescd.controller;
 
+import br.dsw.pescd.domain.Usuario;
+import br.dsw.pescd.dto.ApiDtos.ApiMessageResponse;
+import br.dsw.pescd.dto.ApiDtos.UsuarioRequest;
+import br.dsw.pescd.dto.ApiDtos.UsuarioResumoResponse;
+import br.dsw.pescd.dto.ApiDtos.UsuarioUpdateRequest;
+import br.dsw.pescd.dto.ApiMapper;
 import br.dsw.pescd.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-@RequestMapping("/admin/usuarios")
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/admin/usuarios")
 public class AdministradorController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
+
+    public AdministradorController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("usuarios", usuarioService.listarTodos());
-        return "admin/usuarios";
+    public List<UsuarioResumoResponse> listar() {
+        return usuarioService.listarTodos().stream()
+                .map(ApiMapper::usuarioResumo)
+                .toList();
     }
 
-    @GetMapping("/novo")
-    public String exibirFormulario() {
-        return "admin/form-usuario";
+    @GetMapping("/{id}")
+    public UsuarioResumoResponse buscar(@PathVariable Long id) {
+        return ApiMapper.usuarioResumo(usuarioService.buscarPorId(id));
     }
 
-    @PostMapping("/novo")
-    public String criar(
-            @RequestParam("tipo") String tipo,
-            @RequestParam("nomeCompleto") String nomeCompleto,
-            @RequestParam("email") String email,
-            @RequestParam("username") String username,
-            @RequestParam("senha") String senha,
-            RedirectAttributes redirectAttributes) {
-
-        try {
-            usuarioService.salvarNovoUsuario(tipo, nomeCompleto, email, username, senha);
-            redirectAttributes.addFlashAttribute("sucesso", "Usuário criado com sucesso!");
-            return "redirect:/admin/usuarios";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("erro", "Erro ao criar usuário: " + e.getMessage());
-            return "redirect:/admin/usuarios/novo";
+    @PostMapping
+    public ResponseEntity<UsuarioResumoResponse> criar(@RequestBody UsuarioRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Corpo da requisicao e obrigatorio.");
         }
+
+        Usuario usuario = usuarioService.salvarNovoUsuario(
+                request.tipo(),
+                request.nomeCompleto(),
+                request.email(),
+                request.username(),
+                request.senha()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiMapper.usuarioResumo(usuario));
     }
 
-    @GetMapping("/{id}/editar")
-    public String exibirFormularioEdicao(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            model.addAttribute("usuario", usuarioService.buscarPorId(id));
-            return "admin/form-editar-usuario";
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/admin/usuarios";
+    @PutMapping("/{id}")
+    public UsuarioResumoResponse atualizar(
+            @PathVariable Long id,
+            @RequestBody UsuarioUpdateRequest request
+    ) {
+        if (request == null) {
+            throw new IllegalArgumentException("Corpo da requisicao e obrigatorio.");
         }
+
+        Usuario usuario = usuarioService.atualizarUsuario(
+                id,
+                request.nomeCompleto(),
+                request.email(),
+                request.username(),
+                request.senha()
+        );
+
+        return ApiMapper.usuarioResumo(usuario);
     }
 
-    @PostMapping("/{id}/editar")
-    public String atualizar(
-            @PathVariable("id") Long id,
-            @RequestParam("nomeCompleto") String nomeCompleto,
-            @RequestParam("email") String email,
-            @RequestParam("username") String username,
-            @RequestParam(value = "senha", required = false) String senha,
-            RedirectAttributes redirectAttributes) {
-
-        try {
-            usuarioService.atualizarUsuario(id, nomeCompleto, email, username, senha);
-            redirectAttributes.addFlashAttribute("sucesso", "Usuário atualizado com sucesso!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("erro", "Erro ao atualizar usuário: " + e.getMessage());
+    @DeleteMapping("/{id}")
+    public ApiMessageResponse excluir(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+        if (usuario.getUsername().equals(authentication.getName())) {
+            throw new IllegalArgumentException("Não é possível remover seu próprio usuário.");
         }
-        return "redirect:/admin/usuarios";
-    }
 
-    @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        try {
-            usuarioService.excluirUsuario(id);
-            redirectAttributes.addFlashAttribute("sucesso", "Usuário removido com sucesso!");
-        } catch (DataIntegrityViolationException e) {
-            redirectAttributes.addFlashAttribute("erro", "Não é possível excluir este usuário, pois ele possui vínculos ativos (ofertas, inscrições, relatórios).");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("erro", "Erro inesperado ao remover usuário.");
-        }
-        return "redirect:/admin/usuarios";
+        usuarioService.excluirUsuario(id);
+        return new ApiMessageResponse("Usuario removido com sucesso.");
     }
 }
