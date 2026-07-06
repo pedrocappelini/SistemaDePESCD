@@ -5,6 +5,10 @@ import br.dsw.pescd.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,6 +19,7 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Configuration
@@ -27,23 +32,37 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/js/**").permitAll()
-                        .requestMatchers("/login", "/ofertas-publicas").permitAll()
-                        .requestMatchers("/aluno/**").hasRole("ALUNO")
-                        .requestMatchers("/secretario/**").hasRole("SECRETARIO")
-                        .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers("/professor/**").hasRole("PROFESSOR")
+                        .requestMatchers(HttpMethod.GET, "/api/ofertas-publicas").permitAll()
+                        .requestMatchers("/api/aluno/**").hasRole("ALUNO")
+                        .requestMatchers("/api/secretario/**").hasRole("SECRETARIO")
+                        .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/api/professor/**").hasRole("PROFESSOR")
+                        .requestMatchers(HttpMethod.GET, "/api/professores").hasAnyRole("ALUNO", "SECRETARIO", "PROFESSOR")
+                        .requestMatchers(HttpMethod.GET, "/api/me").authenticated()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/login/redirecionar", true)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login")
-                        .permitAll()
+                .httpBasic(Customizer.withDefaults())
+                .formLogin(form -> form.disable())
+                .logout(logout -> logout.disable())
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                            response.getWriter().write("""
+                                    {"status":401,"error":"Unauthorized","message":"Autenticacao obrigatoria.","path":"%s"}
+                                    """.formatted(request.getRequestURI()).trim());
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                            response.getWriter().write("""
+                                    {"status":403,"error":"Forbidden","message":"Acesso negado para este perfil.","path":"%s"}
+                                    """.formatted(request.getRequestURI()).trim());
+                        })
                 );
 
         return http.build();

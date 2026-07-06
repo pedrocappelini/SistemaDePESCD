@@ -1,150 +1,47 @@
 package br.dsw.pescd.controller;
 
 import br.dsw.pescd.domain.Oferta;
-import br.dsw.pescd.domain.Inscricao;
+import br.dsw.pescd.dto.ApiDtos.OfertaRequest;
+import br.dsw.pescd.dto.ApiDtos.OfertaResponse;
+import br.dsw.pescd.dto.ApiMapper;
 import br.dsw.pescd.service.OfertaService;
-import br.dsw.pescd.service.InscricaoService;
-import br.dsw.pescd.service.ProfessorService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-@RequestMapping("/secretario")
+@RestController
+@RequestMapping("/api/secretario")
 public class SecretarioController {
 
-    @Autowired
-    private OfertaService ofertaService;
+    private final OfertaService ofertaService;
 
-    @Autowired
-    private InscricaoService inscricaoService;
-
-    @Autowired
-    private ProfessorService professorService;
-
-    @GetMapping("/ofertas/nova")
-    public String exibirFormulario(Model model) {
-        model.addAttribute("oferta", new Oferta());
-        model.addAttribute("professores", professorService.listarProfessores());
-        return "secretario/criar-oferta";
+    public SecretarioController(OfertaService ofertaService) {
+        this.ofertaService = ofertaService;
     }
 
-    @GetMapping("/ofertas/{id}/alunos")
-    public String gerenciarAlunos(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
-            List<Inscricao> inscricoes = inscricaoService.listarInscricoesDaOferta(ofertaId);
-
-            model.addAttribute("oferta", oferta);
-            model.addAttribute("inscricoes", inscricoes);
-
-            return "secretario/gerenciar-alunos";
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/secretario/ofertas";
+    @PostMapping("/ofertas")
+    public ResponseEntity<OfertaResponse> criarOferta(
+            @RequestBody OfertaRequest request,
+            Authentication authentication
+    ) {
+        if (request == null) {
+            throw new IllegalArgumentException("Corpo da requisicao e obrigatorio.");
         }
-    }
 
-    @GetMapping("/ofertas/{id}/acompanhar")
-    public String acompanharOferta(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
-            List<Inscricao> inscricoes = inscricaoService.listarInscricoesDaOferta(ofertaId);
+        Oferta oferta = new Oferta();
+        oferta.setNome(request.nome());
+        oferta.setSemestre(request.semestre());
+        oferta.setDataInicio(request.dataInicio());
+        oferta.setDataFim(request.dataFim());
 
-            model.addAttribute("oferta", oferta);
-            model.addAttribute("inscricoes", inscricoes);
+        ofertaService.criarOferta(oferta, request.professorId(), authentication.getName());
 
-            return "secretario/acompanhar-oferta";
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/secretario/ofertas";
-        }
-    }
-
-    @PostMapping("/ofertas/nova")
-    public String criarOferta(
-            @ModelAttribute Oferta oferta,
-            @RequestParam("professorId") Long professorId,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
-        try {
-            String username = authentication.getName();
-            ofertaService.criarOferta(oferta, professorId, username);
-            redirectAttributes.addFlashAttribute("sucesso", "Oferta criada com sucesso!");
-            return "redirect:/secretario/ofertas";
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/secretario/ofertas/nova";
-        }
-    }
-
-    @PostMapping("/ofertas/{id}/alunos/csv")
-    public String adicionarAlunosCsv(
-            @PathVariable("id") Long ofertaId,
-            @RequestParam("arquivoCsv") MultipartFile arquivoCsv,
-            RedirectAttributes redirectAttributes) {
-        try {
-            inscricaoService.adicionarAlunosPorCsv(ofertaId, arquivoCsv);
-            redirectAttributes.addFlashAttribute("sucesso", "Arquivo CSV processado. Alunos adicionados à oferta!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("erro", "Erro inesperado ao ler o arquivo CSV. Verifique a formatação.");
-        }
-        return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
-    }
-
-    @PostMapping("/ofertas/{id}/alunos/existente")
-    public String adicionarAlunoExistente(
-            @PathVariable("id") Long ofertaId,
-            @RequestParam("email") String email,
-            RedirectAttributes redirectAttributes) {
-        try {
-            inscricaoService.adicionarAlunoExistente(ofertaId, email);
-            redirectAttributes.addFlashAttribute("sucesso", "Aluno existente adicionado com sucesso!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
-    }
-
-    @PostMapping("/ofertas/{id}/alunos/novo")
-    public String cadastrarNovoAluno(
-            @PathVariable("id") Long ofertaId,
-            @RequestParam("ra") String ra,
-            @RequestParam("nomeCompleto") String nomeCompleto,
-            @RequestParam("email") String email,
-            RedirectAttributes redirectAttributes) {
-        try {
-            inscricaoService.cadastrarNovoAlunoEMatricular(ofertaId, ra, nomeCompleto, email);
-            redirectAttributes.addFlashAttribute("sucesso", "Novo aluno cadastrado e matriculado com sucesso!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
-    }
-
-    @PostMapping("/ofertas/{id}/encerrar")
-    public String encerrarOferta(@PathVariable("id") Long ofertaId, RedirectAttributes redirectAttributes) {
-        try {
-            ofertaService.encerrarOferta(ofertaId);
-            redirectAttributes.addFlashAttribute("sucesso", "Oferta encerrada e concluída com sucesso!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/secretario/ofertas";
-    }
-
-    @GetMapping("/ofertas")
-    public String listarOfertas(Model model) {
-        model.addAttribute("ofertas", ofertaService.listarTodasOfertas());
-        return "secretario/ofertas";
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiMapper.oferta(oferta, 0));
     }
 }
