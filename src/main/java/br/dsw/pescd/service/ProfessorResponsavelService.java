@@ -37,6 +37,13 @@ public class ProfessorResponsavelService {
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição não encontrada."));
     }
 
+    public Inscricao buscarInscricaoDoResponsavel(Long id, String username) {
+        Professor professor = buscarProfessor(username);
+        Inscricao inscricao = buscarInscricaoPorId(id);
+        validarResponsavelDaOferta(professor, inscricao);
+        return inscricao;
+    }
+
     public void concluirRelatorio(Long inscricaoId, String parecer,
                                   Integer frequencia, String nota, String username) {
 

@@ -2,10 +2,13 @@ package br.dsw.pescd.controller;
 
 import br.dsw.pescd.domain.Inscricao;
 import br.dsw.pescd.domain.PlanoTrabalho;
+import br.dsw.pescd.dto.HistoricoItemDTO;
 import br.dsw.pescd.dto.ApiDtos.AlunoOfertaResponse;
 import br.dsw.pescd.dto.ApiDtos.PlanoResponse;
+import br.dsw.pescd.dto.ApiDtos.ProgressoResponse;
 import br.dsw.pescd.dto.ApiMapper;
 import br.dsw.pescd.repository.PlanoTrabalhoRepository;
+import br.dsw.pescd.service.HistoricoService;
 import br.dsw.pescd.service.InscricaoService;
 import br.dsw.pescd.service.SubmissaoService;
 import org.springframework.http.HttpStatus;
@@ -29,15 +32,18 @@ public class AlunoController {
     private final InscricaoService inscricaoService;
     private final SubmissaoService submissaoService;
     private final PlanoTrabalhoRepository planoTrabalhoRepository;
+    private final HistoricoService historicoService;
 
     public AlunoController(
             InscricaoService inscricaoService,
             SubmissaoService submissaoService,
-            PlanoTrabalhoRepository planoTrabalhoRepository
+            PlanoTrabalhoRepository planoTrabalhoRepository,
+            HistoricoService historicoService
     ) {
         this.inscricaoService = inscricaoService;
         this.submissaoService = submissaoService;
         this.planoTrabalhoRepository = planoTrabalhoRepository;
+        this.historicoService = historicoService;
     }
 
     @GetMapping("/ofertas")
@@ -48,6 +54,26 @@ public class AlunoController {
                         inscricaoService.listarInscricoesDaOferta(inscricao.getOferta().getId()).size()
                 ))
                 .toList();
+    }
+
+    @GetMapping("/progresso")
+    public ProgressoResponse progresso(Authentication authentication) {
+        List<HistoricoItemDTO> historico = historicoService.buscarHistoricoDoAluno(authentication.getName());
+        int concluidos = historicoService.contarSemestresConcluidos(historico);
+        int minimos = historicoService.getSemestresMinimos();
+
+        return new ProgressoResponse(
+                historico.stream()
+                        .map(item -> ApiMapper.historico(
+                                item.getInscricao(),
+                                inscricaoService.listarInscricoesDaOferta(item.getInscricao().getOferta().getId()).size(),
+                                item.getAvaliacao()
+                        ))
+                        .toList(),
+                concluidos,
+                minimos,
+                concluidos >= minimos
+        );
     }
 
     @PostMapping(value = "/ofertas/{ofertaId}/plano", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

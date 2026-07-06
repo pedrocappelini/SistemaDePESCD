@@ -1,184 +1,117 @@
 package br.dsw.pescd.controller;
 
+import br.dsw.pescd.domain.AvaliacaoResponsavel;
 import br.dsw.pescd.domain.Documentacao;
 import br.dsw.pescd.domain.Inscricao;
-import br.dsw.pescd.domain.Oferta;
 import br.dsw.pescd.domain.PlanoTrabalho;
 import br.dsw.pescd.domain.RelatorioFinal;
+import br.dsw.pescd.dto.ApiDtos.AvaliacaoRequest;
+import br.dsw.pescd.dto.ApiDtos.InscricaoDetalheResponse;
+import br.dsw.pescd.dto.ApiMapper;
+import br.dsw.pescd.repository.AvaliacaoResponsavelRepository;
 import br.dsw.pescd.repository.DocumentacaoRepository;
 import br.dsw.pescd.repository.PlanoTrabalhoRepository;
 import br.dsw.pescd.repository.RelatorioFinalRepository;
 import br.dsw.pescd.service.ProfessorResponsavelService;
-import br.dsw.pescd.service.OfertaService;
-import br.dsw.pescd.service.InscricaoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-@Controller
-@RequestMapping("/professor/responsavel")
+@RestController
+@RequestMapping("/api/professor/responsavel")
 public class ProfessorResponsavelController {
 
-    @Autowired
-    private ProfessorResponsavelService prService;
+    private final ProfessorResponsavelService prService;
+    private final PlanoTrabalhoRepository planoTrabalhoRepository;
+    private final RelatorioFinalRepository relatorioFinalRepository;
+    private final DocumentacaoRepository documentacaoRepository;
+    private final AvaliacaoResponsavelRepository avaliacaoResponsavelRepository;
 
-    @Autowired
-    private PlanoTrabalhoRepository planoTrabalhoRepository;
-
-    @Autowired
-    private RelatorioFinalRepository relatorioFinalRepository;
-
-    @Autowired
-    private DocumentacaoRepository documentacaoRepository;
-
-    @Autowired
-    private OfertaService ofertaService;
-
-    @Autowired
-    private InscricaoService inscricaoService;
-
-    @GetMapping("/dashboard")
-    public String dashboard(Authentication authentication, Model model) {
-        String username = authentication.getName();
-
-        List<Inscricao> inscricoes = prService.listarInscricoesDoResponsavel(username);
-
-        Map<Oferta, List<Inscricao>> inscricoesPorOferta = inscricoes.stream()
-                .collect(Collectors.groupingBy(Inscricao::getOferta));
-
-        model.addAttribute("inscricoesPorOferta", inscricoesPorOferta);
-
-        return "professor/responsavel/dashboard";
+    public ProfessorResponsavelController(
+            ProfessorResponsavelService prService,
+            PlanoTrabalhoRepository planoTrabalhoRepository,
+            RelatorioFinalRepository relatorioFinalRepository,
+            DocumentacaoRepository documentacaoRepository,
+            AvaliacaoResponsavelRepository avaliacaoResponsavelRepository
+    ) {
+        this.prService = prService;
+        this.planoTrabalhoRepository = planoTrabalhoRepository;
+        this.relatorioFinalRepository = relatorioFinalRepository;
+        this.documentacaoRepository = documentacaoRepository;
+        this.avaliacaoResponsavelRepository = avaliacaoResponsavelRepository;
     }
 
-    @GetMapping("/ofertas/{id}/acompanhar")
-    public String acompanharOferta(@PathVariable("id") Long ofertaId, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            Oferta oferta = ofertaService.buscarOfertaPorId(ofertaId);
-            List<Inscricao> inscricoes = inscricaoService.listarInscricoesDaOferta(ofertaId);
+    @GetMapping("/relatorios/{inscricaoId}")
+    public InscricaoDetalheResponse detalharRelatorio(
+            @PathVariable Long inscricaoId,
+            Authentication authentication
+    ) {
+        Inscricao inscricao = prService.buscarInscricaoDoResponsavel(inscricaoId, authentication.getName());
+        PlanoTrabalho plano = planoTrabalhoRepository.findByInscricao(inscricao)
+                .orElseThrow(() -> new IllegalArgumentException("Plano nao encontrado."));
+        RelatorioFinal relatorio = relatorioFinalRepository.findByInscricao(inscricao)
+                .orElseThrow(() -> new IllegalArgumentException("Relatorio nao encontrado."));
+        AvaliacaoResponsavel avaliacao = avaliacaoResponsavelRepository.findByInscricao(inscricao).orElse(null);
 
-            model.addAttribute("oferta", oferta);
-            model.addAttribute("inscricoes", inscricoes);
-
-            return "professor/responsavel/acompanhar-oferta";
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/professor/responsavel/dashboard";
-        }
-    }
-
-    @PostMapping("/ofertas/{id}/encerrar")
-    public String solicitarEncerramentoOferta(@PathVariable("id") Long ofertaId, RedirectAttributes redirectAttributes) {
-        try {
-            ofertaService.solicitarEncerramento(ofertaId);
-            redirectAttributes.addFlashAttribute("sucesso", "Oferta encaminhada para encerramento pela Secretaria!");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-        }
-        return "redirect:/professor/responsavel/dashboard";
-    }
-
-    @GetMapping("/relatorios/{inscricaoId}/concluir")
-    public String exibirFormularioConclusao(
-            @PathVariable("inscricaoId") Long inscricaoId,
-            Model model,
-            RedirectAttributes redirectAttributes) {
-
-        try {
-            Inscricao inscricao = prService.buscarInscricaoPorId(inscricaoId);
-
-            PlanoTrabalho plano = planoTrabalhoRepository.findByInscricao(inscricao)
-                    .orElseThrow(() -> new IllegalArgumentException("Plano não encontrado."));
-
-            RelatorioFinal relatorio = relatorioFinalRepository.findByInscricao(inscricao)
-                    .orElseThrow(() -> new IllegalArgumentException("Relatório não encontrado."));
-
-            model.addAttribute("inscricao", inscricao);
-            model.addAttribute("plano", plano);
-            model.addAttribute("relatorio", relatorio);
-
-            return "professor/responsavel/concluir-relatorio";
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/professor/responsavel/dashboard";
-        }
+        return ApiMapper.inscricaoDetalhe(inscricao, plano, null, relatorio, avaliacao);
     }
 
     @PostMapping("/relatorios/{inscricaoId}/concluir")
-    public String concluirRelatorio(
-            @PathVariable("inscricaoId") Long inscricaoId,
-            @RequestParam("parecer") String parecer,
-            @RequestParam("frequencia") Integer frequencia,
-            @RequestParam("nota") String nota,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+    public InscricaoDetalheResponse concluirRelatorio(
+            @PathVariable Long inscricaoId,
+            @RequestBody AvaliacaoRequest request,
+            Authentication authentication
+    ) {
+        validarAvaliacao(request);
+        prService.concluirRelatorio(
+                inscricaoId,
+                request.parecer(),
+                request.frequencia(),
+                request.nota(),
+                authentication.getName()
+        );
 
-        try {
-            String username = authentication.getName();
-            prService.concluirRelatorio(inscricaoId, parecer, frequencia, nota, username);
-
-            redirectAttributes.addFlashAttribute("sucesso",
-                    "Relatório concluído com sucesso! Aluno avaliado.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/professor/responsavel/relatorios/" + inscricaoId + "/concluir";
-        }
-
-        return "redirect:/professor/responsavel/dashboard";
+        return detalharRelatorio(inscricaoId, authentication);
     }
 
-    @GetMapping("/documentacoes/{inscricaoId}/analisar")
-    public String exibirFormularioAnalise(
-            @PathVariable("inscricaoId") Long inscricaoId,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+    @GetMapping("/documentacoes/{inscricaoId}")
+    public InscricaoDetalheResponse detalharDocumentacao(
+            @PathVariable Long inscricaoId,
+            Authentication authentication
+    ) {
+        Inscricao inscricao = prService.buscarInscricaoDoResponsavel(inscricaoId, authentication.getName());
+        Documentacao documentacao = documentacaoRepository.findByInscricao(inscricao)
+                .orElseThrow(() -> new IllegalArgumentException("Documentacao nao encontrada."));
+        AvaliacaoResponsavel avaliacao = avaliacaoResponsavelRepository.findByInscricao(inscricao).orElse(null);
 
-        try {
-            Inscricao inscricao = prService.buscarInscricaoPorId(inscricaoId);
-
-            Documentacao documentacao = documentacaoRepository.findByInscricao(inscricao)
-                    .orElseThrow(() -> new IllegalArgumentException("Documentação não encontrada."));
-
-            model.addAttribute("inscricao", inscricao);
-            model.addAttribute("documentacao", documentacao);
-
-            return "professor/responsavel/analisar-documentacao";
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/professor/responsavel/dashboard";
-        }
+        return ApiMapper.inscricaoDetalhe(inscricao, null, documentacao, null, avaliacao);
     }
 
     @PostMapping("/documentacoes/{inscricaoId}/analisar")
-    public String analisarDocumentacao(
-            @PathVariable("inscricaoId") Long inscricaoId,
-            @RequestParam("parecer") String parecer,
-            @RequestParam("frequencia") Integer frequencia,
-            @RequestParam("nota") String nota,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+    public InscricaoDetalheResponse analisarDocumentacao(
+            @PathVariable Long inscricaoId,
+            @RequestBody AvaliacaoRequest request,
+            Authentication authentication
+    ) {
+        validarAvaliacao(request);
+        prService.analisarDocumentacao(
+                inscricaoId,
+                request.parecer(),
+                request.frequencia(),
+                request.nota(),
+                authentication.getName()
+        );
 
-        try {
-            String username = authentication.getName();
-            prService.analisarDocumentacao(inscricaoId, parecer, frequencia, nota, username);
+        return detalharDocumentacao(inscricaoId, authentication);
+    }
 
-            redirectAttributes.addFlashAttribute("sucesso",
-                    "Documentação analisada com sucesso! Aluno avaliado.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/professor/responsavel/documentacoes/" + inscricaoId + "/analisar";
+    private void validarAvaliacao(AvaliacaoRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Corpo da requisicao e obrigatorio.");
         }
-
-        return "redirect:/professor/responsavel/dashboard";
     }
 }
