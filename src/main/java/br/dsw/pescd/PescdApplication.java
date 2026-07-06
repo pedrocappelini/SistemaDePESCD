@@ -20,11 +20,24 @@ public class PescdApplication {
         SpringApplication.run(PescdApplication.class, args);
     }
 
-    // Inicialização de dados para testar o funcionamento do banco de dados e as estórias implementadas
     @Bean
-    public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo, PlanoTrabalhoRepository planoRepo, RelatorioFinalRepository relatorioRepo, DocumentacaoRepository docRepo,     AvaliacaoResponsavelRepository avaliacaoRepo) {
+    public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo, PlanoTrabalhoRepository planoRepo, RelatorioFinalRepository relatorioRepo, DocumentacaoRepository docRepo, AvaliacaoResponsavelRepository avaliacaoRepo) {
         return args -> {
-            // --- 1. CADASTRO DE USUÁRIOS BASE ---
+
+            Administrador admin = new Administrador();
+            admin.setNomeCompleto("Administrador Mario");
+            admin.setEmail("mario@ufscar.br");
+            admin.setUsername("mario.admin");
+            admin.setSenha("mario1");
+            usuarioRepo.save(admin);
+
+            Aluno aluno4 = new Aluno();
+            aluno4.setNomeCompleto("Leonardo Teste Exclusao");
+            aluno4.setEmail("leonardo@estudante.ufscar.br");
+            aluno4.setUsername("leonardo.aluno");
+            aluno4.setRA("999888");
+            aluno4.setSenha("leonardo1");
+            usuarioRepo.save(aluno4);
 
             Secretario sec = new Secretario();
             sec.setNomeCompleto("Secretario Lucas");
@@ -47,9 +60,6 @@ public class PescdApplication {
             profSupervisor.setSenha("maria1");
             usuarioRepo.save(profSupervisor);
 
-            // --- 2. CADASTRO DE ALUNOS ---
-
-            // para al02
             Aluno aluno1 = new Aluno();
             aluno1.setNomeCompleto("Pedro Cappelini");
             aluno1.setEmail("pedrocapp@estudante.ufscar.br");
@@ -58,7 +68,6 @@ public class PescdApplication {
             aluno1.setSenha("pedro1");
             usuarioRepo.save(aluno1);
 
-            //para al01
             Aluno aluno2 = new Aluno();
             aluno2.setNomeCompleto("Ana Estagiaria");
             aluno2.setEmail("ana@estudante.ufscar.br");
@@ -66,8 +75,6 @@ public class PescdApplication {
             aluno2.setRA("112233");
             aluno2.setSenha("ana1");
             usuarioRepo.save(aluno2);
-
-            // --- 3. CADASTRO DE OFERTAS ---
 
             Oferta ofertaAtual = new Oferta();
             ofertaAtual.setNome("Desenvolvimento de Software para Web 1");
@@ -80,24 +87,21 @@ public class PescdApplication {
             ofertaAtual.setDataHoraCriacao(LocalDateTime.now());
             ofertaRepo.save(ofertaAtual);
 
-            //para al01
             Oferta ofertaPassada = new Oferta();
             ofertaPassada.setNome("Engenharia de Software 2");
             ofertaPassada.setSemestre("2025/2");
             ofertaPassada.setDataInicio(LocalDate.of(2025, 8, 1));
             ofertaPassada.setDataFim(LocalDate.of(2025, 12, 10));
             ofertaPassada.setStatus(StatusOferta.CONCLUIDA);
-            ofertaPassada.setProfessorResponsavel(profSupervisor); // Professora Maria como responsável aqui
+            ofertaPassada.setProfessorResponsavel(profSupervisor);
             ofertaPassada.setCriadoPor(sec);
             ofertaPassada.setDataHoraCriacao(LocalDateTime.now().minusMonths(6));
             ofertaRepo.save(ofertaPassada);
 
-
-            //al02
             Inscricao inscricaoPedro = new Inscricao();
             inscricaoPedro.setAluno(aluno1);
             inscricaoPedro.setOferta(ofertaAtual);
-            inscricaoPedro.setStatus(StatusAlunoOferta.NAO_ENVIADO); // Explicitamente não enviado
+            inscricaoPedro.setStatus(StatusAlunoOferta.NAO_ENVIADO);
             inscRepo.save(inscricaoPedro);
 
             Inscricao inscricaoAnaAtual = new Inscricao();
@@ -107,7 +111,6 @@ public class PescdApplication {
             inscricaoAnaAtual.setStatus(StatusAlunoOferta.PLANO_APROVADO);
             inscRepo.save(inscricaoAnaAtual);
 
-            //al01
             Inscricao inscricaoAnaPassada = new Inscricao();
             inscricaoAnaPassada.setAluno(aluno2);
             inscricaoAnaPassada.setOferta(ofertaPassada);
@@ -117,18 +120,14 @@ public class PescdApplication {
 
             AvaliacaoResponsavel avaliacaoAnaPassada = new AvaliacaoResponsavel();
             avaliacaoAnaPassada.setInscricao(inscricaoAnaPassada);
-            avaliacaoAnaPassada.setProfessorResponsavel(profSupervisor); // Maria (PR da ofertaPassada)
-            avaliacaoAnaPassada.setParecer("Excelente desempenho. Aluna demonstrou domínio do conteúdo " +
-                    "e dedicação durante todo o semestre.");
+            avaliacaoAnaPassada.setProfessorResponsavel(profSupervisor);
+            avaliacaoAnaPassada.setParecer("Excelente desempenho. Aluna demonstrou domínio do conteúdo e dedicação durante todo o semestre.");
             avaliacaoAnaPassada.setFrequencia(95);
             avaliacaoAnaPassada.setNota("A");
             avaliacaoAnaPassada.setTipo(TipoConclusao.RELATORIO);
             avaliacaoAnaPassada.setDataHoraAvaliacao(LocalDateTime.now().minusMonths(5));
             avaliacaoRepo.save(avaliacaoAnaPassada);
 
-            // --- 4. CENÁRIOS PRONTOS PRA TESTAR PR.01 E PR.02 ---
-
-            // Aluno extra 1 — pronto pra PR.01 (RELATORIO_APROVADO_SUPERVISOR)
             Aluno aluno3 = new Aluno();
             aluno3.setNomeCompleto("Carlos Relatorio Pronto");
             aluno3.setEmail("carlos@estudante.ufscar.br");
@@ -137,7 +136,6 @@ public class PescdApplication {
             aluno3.setSenha("carlos1");
             usuarioRepo.save(aluno3);
 
-            // Inscrição do Carlos na oferta atual, supervisor = Maria
             Inscricao inscCarlos = new Inscricao();
             inscCarlos.setAluno(aluno3);
             inscCarlos.setOferta(ofertaAtual);
@@ -145,40 +143,36 @@ public class PescdApplication {
             inscCarlos.setStatus(StatusAlunoOferta.RELATORIO_APROVADO_SUPERVISOR);
             inscRepo.save(inscCarlos);
 
-            // PlanoTrabalho do Carlos (já avaliado pela Maria)
             PlanoTrabalho planoCarlos = new PlanoTrabalho();
             planoCarlos.setInscricao(inscCarlos);
             planoCarlos.setCodigoDisciplina("DC100");
             planoCarlos.setNomeDisciplina("Algoritmos e Estruturas de Dados");
             planoCarlos.setCursoDisciplina("Bacharelado em Ciência da Computação");
-            planoCarlos.setNomeArquivo("plano_1_1780779000479.pdf"); // reaproveita PDF já existente em /uploads
+            planoCarlos.setNomeArquivo("plano_1_1780779000479.pdf");
             planoCarlos.setParecerSupervisor("Plano coerente e bem estruturado. Aprovado.");
             planoCarlos.setDataHoraAvaliacao(LocalDateTime.now().minusDays(60));
             planoRepo.save(planoCarlos);
 
-            // RelatorioFinal do Carlos (já avaliado pela Maria)
             RelatorioFinal relCarlos = new RelatorioFinal();
             relCarlos.setInscricao(inscCarlos);
-            relCarlos.setNomeArquivo("relatorio_1_1780808894398.pdf"); // PDF já existente
+            relCarlos.setNomeArquivo("relatorio_1_1780808894398.pdf");
             relCarlos.setFrequencia(95);
             relCarlos.setSugestaoNota("A");
             relCarlos.setParecerSupervisor("Excelente desempenho. Aluno demonstrou domínio do conteúdo.");
             relCarlos.setDataHoraAvaliacao(LocalDateTime.now().minusDays(5));
             relatorioRepo.save(relCarlos);
 
-            // Aluno extra 2 — pronto pra PR.02 (DOCUMENTACAO_ENVIADA)
-            Aluno aluno4 = new Aluno();
-            aluno4.setNomeCompleto("Beatriz Já Lecionou");
-            aluno4.setEmail("beatriz@estudante.ufscar.br");
-            aluno4.setUsername("bia.aluno");
-            aluno4.setRA("778899");
-            aluno4.setSenha("bia1");
-            usuarioRepo.save(aluno4);
+            Aluno aluno5 = new Aluno();
+            aluno5.setNomeCompleto("Beatriz Já Lecionou");
+            aluno5.setEmail("beatriz@estudante.ufscar.br");
+            aluno5.setUsername("bia.aluno");
+            aluno5.setRA("778899");
+            aluno5.setSenha("bia1");
+            usuarioRepo.save(aluno5);
 
             Inscricao inscBia = new Inscricao();
             inscBia.setAluno(aluno4);
             inscBia.setOferta(ofertaAtual);
-            // Bia NÃO tem supervisor porque foi pelo caminho da documentação direto
             inscBia.setStatus(StatusAlunoOferta.DOCUMENTACAO_ENVIADA);
             inscRepo.save(inscBia);
 
@@ -188,7 +182,7 @@ public class PescdApplication {
             docBia.setNomeDisciplina("Introdução à Programação");
             docBia.setCursoDisciplina("Engenharia Civil");
             docBia.setCargaHoraria(60);
-            docBia.setNomeArquivo("doc_ensino_1_1780781498421.pdf"); // PDF já existente
+            docBia.setNomeArquivo("doc_ensino_1_1780781498421.pdf");
             docRepo.save(docBia);
 
         };

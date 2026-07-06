@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Usuário - PESCD</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<header>
+    <h2>Sistema PESCD - Administrador</h2>
+    <div>
+        Logado como: <strong sec:authentication="name"></strong>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+</header>
+
+<main class="container">
+
+    <h1>Criar Novo Usuário</h1>
+
+    <div th:if="${erro}" class="alert-erro" th:text="${erro}"></div>
+
+    <form th:action="@{/admin/usuarios/novo}" method="post" class="form-card">
+
+        <div class="form-grupo">
+            <label for="tipo">Perfil do Usuário <span class="obrigatorio">*</span></label>
+            <select id="tipo" name="tipo" required>
+                <option value="">-- Selecione o perfil --</option>
+                <option value="ADMINISTRADOR">Administrador</option>
+                <option value="SECRETARIO">Secretário</option>
+                <option value="PROFESSOR">Professor / Supervisor</option>
+                <option value="ALUNO">Aluno</option>
+            </select>
+        </div>
+
+        <div class="form-grupo">
+            <label for="nomeCompleto">Nome Completo <span class="obrigatorio">*</span></label>
+            <input type="text" id="nomeCompleto" name="nomeCompleto" required maxlength="100"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="email">E-mail <span class="obrigatorio">*</span></label>
+            <input type="email" id="email" name="email" required maxlength="100"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="username">Username (Login) <span class="obrigatorio">*</span></label>
+            <input type="text" id="username" name="username" required maxlength="100"/>
+        </div>
+
+        <div class="form-grupo">
+            <label for="senha">Senha <span class="obrigatorio">*</span></label>
+            <input type="password" id="senha" name="senha" required/>
+        </div>
+
+        <div class="form-acoes">
+            <button type="submit" class="btn-primario">Criar Usuário</button>
+            <a th:href="@{/admin/usuarios}" class="btn-secundario">Cancelar</a>
+        </div>
+
+    </form>
+</main>
+
+</body>
+</html>
