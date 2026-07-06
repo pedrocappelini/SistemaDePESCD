@@ -56,15 +56,18 @@ public class SubmissaoService {
             throw new IllegalArgumentException("Todos os campos obrigatórios devem ser preenchidos corretamente.");
         }
 
-        arquivoService.validarPdf(arquivo);
-        String nomeArquivoSalvo = arquivoService.salvarArquivo(arquivo, "doc_ensino", inscricao.getId());
+        ArquivoService.ArquivoPdf arquivoPdf = arquivoService.prepararPdf(arquivo, "doc_ensino", inscricao.getId());
 
         Documentacao doc = new Documentacao();
         doc.setInstituicao(instituicao);
         doc.setNomeDisciplina(nomeDisciplina);
         doc.setCursoDisciplina(cursoDisciplina);
         doc.setCargaHoraria(cargaHoraria);
-        doc.setNomeArquivo(nomeArquivoSalvo);
+        doc.setNomeArquivo(arquivoPdf.nomeArquivo());
+        doc.setNomeArquivoOriginal(arquivoPdf.nomeArquivoOriginal());
+        doc.setContentType(arquivoPdf.contentType());
+        doc.setTamanhoBytes(arquivoPdf.tamanhoBytes());
+        doc.setArquivoPdf(arquivoPdf.conteudo());
         doc.setInscricao(inscricao);
         documentacaoRepository.save(doc);
 
@@ -87,12 +90,15 @@ public class SubmissaoService {
             throw new IllegalArgumentException("A frequência deve ser um valor entre 0 e 100.");
         }
 
-        arquivoService.validarPdf(arquivo);
-        String nomeArquivoSalvo = arquivoService.salvarArquivo(arquivo, "relatorio", inscricao.getId());
+        ArquivoService.ArquivoPdf arquivoPdf = arquivoService.prepararPdf(arquivo, "relatorio", inscricao.getId());
 
         RelatorioFinal relatorio = new RelatorioFinal();
         relatorio.setFrequencia(frequencia);
-        relatorio.setNomeArquivo(nomeArquivoSalvo);
+        relatorio.setNomeArquivo(arquivoPdf.nomeArquivo());
+        relatorio.setNomeArquivoOriginal(arquivoPdf.nomeArquivoOriginal());
+        relatorio.setContentType(arquivoPdf.contentType());
+        relatorio.setTamanhoBytes(arquivoPdf.tamanhoBytes());
+        relatorio.setArquivoPdf(arquivoPdf.conteudo());
         relatorio.setInscricao(inscricao);
         relatorioFinalRepository.save(relatorio);
 
@@ -113,8 +119,7 @@ public class SubmissaoService {
             throw new IllegalArgumentException("Você já realizou um envio nesta oferta.");
         }
 
-        arquivoService.validarPdf(arquivo);
-        String nomeArquivoSalvo = arquivoService.salvarArquivo(arquivo, "plano", inscricao.getId());
+        ArquivoService.ArquivoPdf arquivoPdf = arquivoService.prepararPdf(arquivo, "plano", inscricao.getId());
 
         Professor supervisor = professorRepository.findById(professorSupId)
                 .orElseThrow(() -> new IllegalArgumentException("Professor supervisor não encontrado."));
@@ -123,7 +128,11 @@ public class SubmissaoService {
         plano.setCodigoDisciplina(codigoDisciplina);
         plano.setNomeDisciplina(nomeDisciplina);
         plano.setCursoDisciplina(cursoDisciplina);
-        plano.setNomeArquivo(nomeArquivoSalvo);
+        plano.setNomeArquivo(arquivoPdf.nomeArquivo());
+        plano.setNomeArquivoOriginal(arquivoPdf.nomeArquivoOriginal());
+        plano.setContentType(arquivoPdf.contentType());
+        plano.setTamanhoBytes(arquivoPdf.tamanhoBytes());
+        plano.setArquivoPdf(arquivoPdf.conteudo());
         plano.setInscricao(inscricao);
         planoTrabalhoRepository.save(plano);
 

@@ -79,6 +79,10 @@ public final class ApiDtos {
             String nomeDisciplina,
             String cursoDisciplina,
             String nomeArquivo,
+            String nomeArquivoOriginal,
+            String contentType,
+            Long tamanhoBytes,
+            String downloadUrl,
             String parecerSupervisor,
             LocalDateTime dataHoraAvaliacao
     ) {
@@ -91,7 +95,11 @@ public final class ApiDtos {
             String nomeDisciplina,
             String cursoDisciplina,
             Integer cargaHoraria,
-            String nomeArquivo
+            String nomeArquivo,
+            String nomeArquivoOriginal,
+            String contentType,
+            Long tamanhoBytes,
+            String downloadUrl
     ) {
     }
 
@@ -100,6 +108,10 @@ public final class ApiDtos {
             Long inscricaoId,
             Integer frequencia,
             String nomeArquivo,
+            String nomeArquivoOriginal,
+            String contentType,
+            Long tamanhoBytes,
+            String downloadUrl,
             String parecerSupervisor,
             String sugestaoNota,
             LocalDateTime dataHoraAvaliacao

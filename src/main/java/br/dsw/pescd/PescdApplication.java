@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ public class PescdApplication {
     @Bean
     public CommandLineRunner testarBanco(UsuarioRepository usuarioRepo, OfertaRepository ofertaRepo, InscricaoRepository inscRepo, PlanoTrabalhoRepository planoRepo, RelatorioFinalRepository relatorioRepo, DocumentacaoRepository docRepo, AvaliacaoResponsavelRepository avaliacaoRepo) {
         return args -> {
+            byte[] pdfExemplo = pdfExemplo();
 
             Administrador admin = new Administrador();
             admin.setNomeCompleto("Administrador Mario");
@@ -149,6 +151,10 @@ public class PescdApplication {
             planoCarlos.setNomeDisciplina("Algoritmos e Estruturas de Dados");
             planoCarlos.setCursoDisciplina("Bacharelado em Ciência da Computação");
             planoCarlos.setNomeArquivo("plano_1_1780779000479.pdf");
+            planoCarlos.setNomeArquivoOriginal("plano-carlos.pdf");
+            planoCarlos.setContentType("application/pdf");
+            planoCarlos.setTamanhoBytes((long) pdfExemplo.length);
+            planoCarlos.setArquivoPdf(pdfExemplo);
             planoCarlos.setParecerSupervisor("Plano coerente e bem estruturado. Aprovado.");
             planoCarlos.setDataHoraAvaliacao(LocalDateTime.now().minusDays(60));
             planoRepo.save(planoCarlos);
@@ -156,6 +162,10 @@ public class PescdApplication {
             RelatorioFinal relCarlos = new RelatorioFinal();
             relCarlos.setInscricao(inscCarlos);
             relCarlos.setNomeArquivo("relatorio_1_1780808894398.pdf");
+            relCarlos.setNomeArquivoOriginal("relatorio-carlos.pdf");
+            relCarlos.setContentType("application/pdf");
+            relCarlos.setTamanhoBytes((long) pdfExemplo.length);
+            relCarlos.setArquivoPdf(pdfExemplo);
             relCarlos.setFrequencia(95);
             relCarlos.setSugestaoNota("A");
             relCarlos.setParecerSupervisor("Excelente desempenho. Aluno demonstrou domínio do conteúdo.");
@@ -183,8 +193,27 @@ public class PescdApplication {
             docBia.setCursoDisciplina("Engenharia Civil");
             docBia.setCargaHoraria(60);
             docBia.setNomeArquivo("doc_ensino_1_1780781498421.pdf");
+            docBia.setNomeArquivoOriginal("documentacao-bia.pdf");
+            docBia.setContentType("application/pdf");
+            docBia.setTamanhoBytes((long) pdfExemplo.length);
+            docBia.setArquivoPdf(pdfExemplo);
             docRepo.save(docBia);
 
         };
+    }
+
+    private static byte[] pdfExemplo() {
+        return """
+                %PDF-1.4
+                1 0 obj
+                << /Type /Catalog /Pages 2 0 R >>
+                endobj
+                2 0 obj
+                << /Type /Pages /Kids [] /Count 0 >>
+                endobj
+                trailer
+                << /Root 1 0 R >>
+                %%EOF
+                """.getBytes(StandardCharsets.UTF_8);
     }
 }

@@ -94,6 +94,10 @@ public final class ApiMapper {
                 plano.getNomeDisciplina(),
                 plano.getCursoDisciplina(),
                 plano.getNomeArquivo(),
+                plano.getNomeArquivoOriginal(),
+                plano.getContentType(),
+                plano.getTamanhoBytes(),
+                "/api/arquivos/planos/" + plano.getId() + "/pdf",
                 plano.getParecerSupervisor(),
                 plano.getDataHoraAvaliacao()
         );
@@ -111,7 +115,11 @@ public final class ApiMapper {
                 documentacao.getNomeDisciplina(),
                 documentacao.getCursoDisciplina(),
                 documentacao.getCargaHoraria(),
-                documentacao.getNomeArquivo()
+                documentacao.getNomeArquivo(),
+                documentacao.getNomeArquivoOriginal(),
+                documentacao.getContentType(),
+                documentacao.getTamanhoBytes(),
+                "/api/arquivos/documentacoes/" + documentacao.getId() + "/pdf"
         );
     }
 
@@ -125,6 +133,10 @@ public final class ApiMapper {
                 relatorio.getInscricao().getId(),
                 relatorio.getFrequencia(),
                 relatorio.getNomeArquivo(),
+                relatorio.getNomeArquivoOriginal(),
+                relatorio.getContentType(),
+                relatorio.getTamanhoBytes(),
+                "/api/arquivos/relatorios/" + relatorio.getId() + "/pdf",
                 relatorio.getParecerSupervisor(),
                 relatorio.getSugestaoNota(),
                 relatorio.getDataHoraAvaliacao()

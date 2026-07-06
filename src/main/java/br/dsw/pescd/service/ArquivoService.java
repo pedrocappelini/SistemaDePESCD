@@ -1,20 +1,36 @@
 package br.dsw.pescd.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 @Service
 public class ArquivoService {
 
-    @Value("${app.upload.dir}")
-    private String uploadDir;
+    public record ArquivoPdf(
+            String nomeArquivo,
+            String nomeArquivoOriginal,
+            String contentType,
+            Long tamanhoBytes,
+            byte[] conteudo
+    ) {
+    }
+
+    public ArquivoPdf prepararPdf(MultipartFile arquivo, String prefixo, Long inscricaoId) throws IOException {
+        validarPdf(arquivo);
+
+        String nomeOriginal = arquivo.getOriginalFilename();
+        String nomeArquivo = prefixo + "_" + inscricaoId + "_" + System.currentTimeMillis() + ".pdf";
+
+        return new ArquivoPdf(
+                nomeArquivo,
+                nomeOriginal == null || nomeOriginal.isBlank() ? nomeArquivo : nomeOriginal,
+                "application/pdf",
+                arquivo.getSize(),
+                arquivo.getBytes()
+        );
+    }
 
     public void validarPdf(MultipartFile arquivo) {
         if (arquivo.isEmpty()) {
@@ -35,20 +51,5 @@ public class ArquivoService {
         if (arquivo.getSize() > maxTamanho) {
             throw new IllegalArgumentException("O arquivo deve ter no máximo 5MB.");
         }
-    }
-
-    public String salvarArquivo(MultipartFile arquivo, String prefixo, Long inscricaoId) throws IOException {
-        Path diretorio = Paths.get(uploadDir).toAbsolutePath().normalize();
-
-        if (!Files.exists(diretorio)) {
-            Files.createDirectories(diretorio);
-        }
-
-        String nomeArquivo = prefixo + "_" + inscricaoId + "_" + System.currentTimeMillis() + ".pdf";
-        Path destino = diretorio.resolve(nomeArquivo);
-
-        Files.copy(arquivo.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-
-        return nomeArquivo;
     }
 }
