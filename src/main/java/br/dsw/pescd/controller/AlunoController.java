@@ -17,6 +17,8 @@ import br.dsw.pescd.repository.RelatorioFinalRepository;
 import br.dsw.pescd.service.HistoricoService;
 import br.dsw.pescd.service.InscricaoService;
 import br.dsw.pescd.service.SubmissaoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/aluno")
+@Tag(name = "aluno")
 public class AlunoController {
 
     private final InscricaoService inscricaoService;
@@ -59,6 +62,7 @@ public class AlunoController {
     }
 
     @GetMapping("/ofertas")
+    @Operation(summary = "listar ofertas do aluno")
     public List<AlunoOfertaResponse> listarOfertas(Authentication authentication) {
         return inscricaoService.buscarInscricoesDoAluno(authentication.getName()).stream()
                 .map(inscricao -> ApiMapper.alunoOferta(
@@ -69,6 +73,7 @@ public class AlunoController {
     }
 
     @GetMapping("/progresso")
+    @Operation(summary = "consultar progresso do aluno")
     public ProgressoResponse progresso(Authentication authentication) {
         List<HistoricoItemDTO> historico = historicoService.buscarHistoricoDoAluno(authentication.getName());
         int concluidos = historicoService.contarSemestresConcluidos(historico);
@@ -89,6 +94,7 @@ public class AlunoController {
     }
 
     @PostMapping(value = "/ofertas/{ofertaId}/plano", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "enviar plano de trabalho")
     public ResponseEntity<PlanoResponse> enviarPlano(
             @PathVariable Long ofertaId,
             @RequestParam String codigoDisciplina,
@@ -116,6 +122,7 @@ public class AlunoController {
     }
 
     @PostMapping(value = "/ofertas/{ofertaId}/documentacao", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "enviar documentacao de aulas")
     public ResponseEntity<DocumentacaoResponse> enviarDocumentacao(
             @PathVariable Long ofertaId,
             @RequestParam String instituicao,
@@ -143,6 +150,7 @@ public class AlunoController {
     }
 
     @PostMapping(value = "/ofertas/{ofertaId}/relatorio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "enviar relatorio final")
     public ResponseEntity<RelatorioResponse> enviarRelatorio(
             @PathVariable Long ofertaId,
             @RequestParam Integer frequencia,

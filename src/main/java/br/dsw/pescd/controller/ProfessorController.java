@@ -10,6 +10,8 @@ import br.dsw.pescd.dto.ApiDtos.OfertaDetalheResponse;
 import br.dsw.pescd.dto.ApiMapper;
 import br.dsw.pescd.service.AcompanhamentoService;
 import br.dsw.pescd.service.ProfessorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/professor")
+@Tag(name = "professor supervisor")
 public class ProfessorController {
 
     private final ProfessorService professorService;
@@ -37,6 +40,7 @@ public class ProfessorController {
     }
 
     @GetMapping("/ofertas")
+    @Operation(summary = "listar supervisoes")
     public List<OfertaDetalheResponse> listarMinhasSupervisoes(Authentication authentication) {
         LinkedHashMap<Long, List<Inscricao>> inscricoesPorOferta = new LinkedHashMap<>();
         professorService.buscarInscricoesDoSupervisor(authentication.getName()).stream()
@@ -64,6 +68,7 @@ public class ProfessorController {
     }
 
     @GetMapping("/planos/{inscricaoId}")
+    @Operation(summary = "consultar plano de trabalho")
     public InscricaoDetalheResponse detalharPlano(
             @PathVariable Long inscricaoId,
             Authentication authentication
@@ -73,6 +78,7 @@ public class ProfessorController {
     }
 
     @PostMapping("/planos/{inscricaoId}/aprovar")
+    @Operation(summary = "aprovar plano de trabalho")
     public InscricaoDetalheResponse aprovarPlano(
             @PathVariable Long inscricaoId,
             @RequestBody AprovacaoPlanoRequest request,
@@ -88,6 +94,7 @@ public class ProfessorController {
     }
 
     @GetMapping("/relatorios/{inscricaoId}")
+    @Operation(summary = "consultar relatorio final")
     public InscricaoDetalheResponse detalharRelatorio(
             @PathVariable Long inscricaoId,
             Authentication authentication
@@ -97,6 +104,7 @@ public class ProfessorController {
     }
 
     @PostMapping("/relatorios/{inscricaoId}/aprovar")
+    @Operation(summary = "aprovar relatorio final")
     public InscricaoDetalheResponse aprovarRelatorio(
             @PathVariable Long inscricaoId,
             @RequestBody AprovacaoRelatorioSupervisorRequest request,

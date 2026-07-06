@@ -11,6 +11,8 @@ import br.dsw.pescd.dto.ApiMapper;
 import br.dsw.pescd.service.AcompanhamentoService;
 import br.dsw.pescd.service.InscricaoService;
 import br.dsw.pescd.service.OfertaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,6 +30,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/secretario")
+@Tag(name = "secretario")
 public class SecretarioController {
 
     private final OfertaService ofertaService;
@@ -45,6 +48,7 @@ public class SecretarioController {
     }
 
     @GetMapping("/ofertas")
+    @Operation(summary = "listar ofertas")
     public List<OfertaResponse> listarOfertas() {
         return ofertaService.listarTodasOfertas().stream()
                 .map(oferta -> ApiMapper.oferta(oferta, inscricaoService.listarInscricoesDaOferta(oferta.getId()).size()))
@@ -52,16 +56,19 @@ public class SecretarioController {
     }
 
     @GetMapping("/ofertas/{ofertaId}")
+    @Operation(summary = "acompanhar oferta")
     public OfertaDetalheResponse acompanharOferta(@PathVariable Long ofertaId) {
         return acompanhamentoService.detalharOferta(ofertaId);
     }
 
     @GetMapping("/ofertas/{ofertaId}/alunos")
+    @Operation(summary = "listar alunos da oferta")
     public OfertaDetalheResponse listarAlunos(@PathVariable Long ofertaId) {
         return acompanhamentoService.detalharOferta(ofertaId);
     }
 
     @PostMapping("/ofertas")
+    @Operation(summary = "criar oferta")
     public ResponseEntity<OfertaResponse> criarOferta(
             @RequestBody OfertaRequest request,
             Authentication authentication
@@ -84,6 +91,7 @@ public class SecretarioController {
     }
 
     @PostMapping("/ofertas/{ofertaId}/encerrar")
+    @Operation(summary = "encerrar oferta")
     public ApiMessageResponse encerrarOferta(
             @PathVariable Long ofertaId,
             Authentication authentication
@@ -93,6 +101,7 @@ public class SecretarioController {
     }
 
     @PostMapping("/ofertas/{ofertaId}/alunos/existente")
+    @Operation(summary = "adicionar aluno existente")
     public OfertaDetalheResponse adicionarAlunoExistente(
             @PathVariable Long ofertaId,
             @RequestBody EmailRequest request
@@ -106,6 +115,7 @@ public class SecretarioController {
     }
 
     @PostMapping("/ofertas/{ofertaId}/alunos")
+    @Operation(summary = "cadastrar e matricular aluno")
     public OfertaDetalheResponse cadastrarNovoAluno(
             @PathVariable Long ofertaId,
             @RequestBody NovoAlunoRequest request
@@ -124,6 +134,7 @@ public class SecretarioController {
     }
 
     @PostMapping(value = "/ofertas/{ofertaId}/alunos/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "importar alunos por csv")
     public OfertaDetalheResponse adicionarAlunosCsv(
             @PathVariable Long ofertaId,
             @RequestParam MultipartFile arquivoCsv

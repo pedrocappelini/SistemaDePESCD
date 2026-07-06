@@ -6,6 +6,8 @@ import br.dsw.pescd.domain.RelatorioFinal;
 import br.dsw.pescd.repository.DocumentacaoRepository;
 import br.dsw.pescd.repository.PlanoTrabalhoRepository;
 import br.dsw.pescd.repository.RelatorioFinalRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/arquivos")
+@Tag(name = "arquivos")
 public class ArquivoController {
 
     private final PlanoTrabalhoRepository planoTrabalhoRepository;
@@ -34,6 +37,7 @@ public class ArquivoController {
     }
 
     @GetMapping("/planos/{id}/pdf")
+    @Operation(summary = "baixar pdf do plano")
     public ResponseEntity<byte[]> baixarPlano(@PathVariable Long id) {
         PlanoTrabalho plano = planoTrabalhoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plano nao encontrado."));
@@ -41,6 +45,7 @@ public class ArquivoController {
     }
 
     @GetMapping("/documentacoes/{id}/pdf")
+    @Operation(summary = "baixar pdf da documentacao")
     public ResponseEntity<byte[]> baixarDocumentacao(@PathVariable Long id) {
         Documentacao documentacao = documentacaoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Documentacao nao encontrada."));
@@ -48,6 +53,7 @@ public class ArquivoController {
     }
 
     @GetMapping("/relatorios/{id}/pdf")
+    @Operation(summary = "baixar pdf do relatorio")
     public ResponseEntity<byte[]> baixarRelatorio(@PathVariable Long id) {
         RelatorioFinal relatorio = relatorioFinalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Relatorio nao encontrado."));

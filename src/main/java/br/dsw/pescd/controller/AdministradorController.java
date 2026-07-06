@@ -7,6 +7,8 @@ import br.dsw.pescd.dto.ApiDtos.UsuarioResumoResponse;
 import br.dsw.pescd.dto.ApiDtos.UsuarioUpdateRequest;
 import br.dsw.pescd.dto.ApiMapper;
 import br.dsw.pescd.service.UsuarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/usuarios")
+@Tag(name = "administrador")
 public class AdministradorController {
 
     private final UsuarioService usuarioService;
@@ -32,6 +35,7 @@ public class AdministradorController {
     }
 
     @GetMapping
+    @Operation(summary = "listar usuarios")
     public List<UsuarioResumoResponse> listar() {
         return usuarioService.listarTodos().stream()
                 .map(ApiMapper::usuarioResumo)
@@ -39,11 +43,13 @@ public class AdministradorController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "consultar usuario")
     public UsuarioResumoResponse buscar(@PathVariable Long id) {
         return ApiMapper.usuarioResumo(usuarioService.buscarPorId(id));
     }
 
     @PostMapping
+    @Operation(summary = "criar usuario")
     public ResponseEntity<UsuarioResumoResponse> criar(@RequestBody UsuarioRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Corpo da requisicao e obrigatorio.");
@@ -61,6 +67,7 @@ public class AdministradorController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "atualizar usuario")
     public UsuarioResumoResponse atualizar(
             @PathVariable Long id,
             @RequestBody UsuarioUpdateRequest request
@@ -81,6 +88,7 @@ public class AdministradorController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "excluir usuario")
     public ApiMessageResponse excluir(
             @PathVariable Long id,
             Authentication authentication

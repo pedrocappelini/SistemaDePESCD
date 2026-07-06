@@ -20,6 +20,8 @@ import br.dsw.pescd.service.AcompanhamentoService;
 import br.dsw.pescd.service.InscricaoService;
 import br.dsw.pescd.service.OfertaService;
 import br.dsw.pescd.service.ProfessorResponsavelService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +35,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/professor/responsavel")
+@Tag(name = "professor responsavel")
 public class ProfessorResponsavelController {
 
     private final ProfessorResponsavelService prService;
@@ -65,6 +68,7 @@ public class ProfessorResponsavelController {
     }
 
     @GetMapping("/ofertas")
+    @Operation(summary = "listar ofertas responsaveis")
     public List<OfertaResponse> listarOfertas(Authentication authentication) {
         LinkedHashMap<Long, Oferta> ofertas = new LinkedHashMap<>();
         prService.listarInscricoesDoResponsavel(authentication.getName())
@@ -76,6 +80,7 @@ public class ProfessorResponsavelController {
     }
 
     @GetMapping("/ofertas/{ofertaId}")
+    @Operation(summary = "acompanhar oferta")
     public OfertaDetalheResponse acompanharOferta(
             @PathVariable Long ofertaId,
             Authentication authentication
@@ -85,6 +90,7 @@ public class ProfessorResponsavelController {
     }
 
     @PostMapping("/ofertas/{ofertaId}/encerramento")
+    @Operation(summary = "solicitar encerramento da oferta")
     public OfertaDetalheResponse solicitarEncerramentoOferta(
             @PathVariable Long ofertaId,
             @RequestBody EncerramentoRequest request,
@@ -104,6 +110,7 @@ public class ProfessorResponsavelController {
     }
 
     @GetMapping("/relatorios/{inscricaoId}")
+    @Operation(summary = "consultar relatorio aprovado pelo supervisor")
     public InscricaoDetalheResponse detalharRelatorio(
             @PathVariable Long inscricaoId,
             Authentication authentication
@@ -119,6 +126,7 @@ public class ProfessorResponsavelController {
     }
 
     @PostMapping("/relatorios/{inscricaoId}/concluir")
+    @Operation(summary = "concluir relatorio do aluno")
     public InscricaoDetalheResponse concluirRelatorio(
             @PathVariable Long inscricaoId,
             @RequestBody AvaliacaoRequest request,
@@ -137,6 +145,7 @@ public class ProfessorResponsavelController {
     }
 
     @GetMapping("/documentacoes/{inscricaoId}")
+    @Operation(summary = "consultar documentacao enviada")
     public InscricaoDetalheResponse detalharDocumentacao(
             @PathVariable Long inscricaoId,
             Authentication authentication
@@ -150,6 +159,7 @@ public class ProfessorResponsavelController {
     }
 
     @PostMapping("/documentacoes/{inscricaoId}/analisar")
+    @Operation(summary = "analisar documentacao")
     public InscricaoDetalheResponse analisarDocumentacao(
             @PathVariable Long inscricaoId,
             @RequestBody AvaliacaoRequest request,
