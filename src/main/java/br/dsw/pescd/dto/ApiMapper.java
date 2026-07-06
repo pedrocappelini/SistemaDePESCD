@@ -65,7 +65,11 @@ public final class ApiMapper {
                 oferta.getStatus().name(),
                 usuarioResumo(oferta.getProfessorResponsavel()),
                 alunosMatriculados,
-                oferta.getDataHoraCriacao()
+                oferta.getDataHoraCriacao(),
+                oferta.getDescricaoLicoesAprendidas(),
+                oferta.getDataHoraSolicitacaoEncerramento(),
+                oferta.getDataHoraEncerramento(),
+                usuarioResumo(oferta.getEncerradoPor())
         );
     }
 

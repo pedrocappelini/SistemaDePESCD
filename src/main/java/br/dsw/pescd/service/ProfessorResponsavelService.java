@@ -2,11 +2,13 @@ package br.dsw.pescd.service;
 
 import br.dsw.pescd.domain.AvaliacaoResponsavel;
 import br.dsw.pescd.domain.Inscricao;
+import br.dsw.pescd.domain.Oferta;
 import br.dsw.pescd.domain.Professor;
 import br.dsw.pescd.enums.StatusAlunoOferta;
 import br.dsw.pescd.enums.TipoConclusao;
 import br.dsw.pescd.repository.AvaliacaoResponsavelRepository;
 import br.dsw.pescd.repository.InscricaoRepository;
+import br.dsw.pescd.repository.OfertaRepository;
 import br.dsw.pescd.repository.ProfessorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,9 @@ public class ProfessorResponsavelService {
     @Autowired
     private AvaliacaoResponsavelRepository avaliacaoResponsavelRepository;
 
+    @Autowired
+    private OfertaRepository ofertaRepository;
+
     public List<Inscricao> listarInscricoesDoResponsavel(String username) {
         Professor professor = buscarProfessor(username);
         return inscricaoRepository.findByOferta_ProfessorResponsavel(professor);
@@ -42,6 +47,18 @@ public class ProfessorResponsavelService {
         Inscricao inscricao = buscarInscricaoPorId(id);
         validarResponsavelDaOferta(professor, inscricao);
         return inscricao;
+    }
+
+    public Oferta buscarOfertaDoResponsavel(Long ofertaId, String username) {
+        Professor professor = buscarProfessor(username);
+        Oferta oferta = ofertaRepository.findById(ofertaId)
+                .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
+
+        if (oferta.getProfessorResponsavel() == null || !oferta.getProfessorResponsavel().equals(professor)) {
+            throw new IllegalArgumentException("Você não é o Professor Responsável desta oferta.");
+        }
+
+        return oferta;
     }
 
     public void concluirRelatorio(Long inscricaoId, String parecer,

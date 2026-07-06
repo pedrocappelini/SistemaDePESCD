@@ -44,4 +44,15 @@ public class Oferta {
     @ManyToOne
     @JoinColumn(name = "criado_por_id", nullable = false)
     private Secretario criadoPor;
+
+    @Column(columnDefinition = "TEXT")
+    private String descricaoLicoesAprendidas;
+
+    private LocalDateTime dataHoraSolicitacaoEncerramento;
+
+    private LocalDateTime dataHoraEncerramento;
+
+    @ManyToOne
+    @JoinColumn(name = "encerrado_por_id")
+    private Secretario encerradoPor;
 }

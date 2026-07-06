@@ -56,7 +56,11 @@ public final class ApiDtos {
             String status,
             UsuarioResumoResponse professorResponsavel,
             Integer alunosMatriculados,
-            LocalDateTime dataHoraCriacao
+            LocalDateTime dataHoraCriacao,
+            String descricaoLicoesAprendidas,
+            LocalDateTime dataHoraSolicitacaoEncerramento,
+            LocalDateTime dataHoraEncerramento,
+            UsuarioResumoResponse encerradoPor
     ) {
     }
 
