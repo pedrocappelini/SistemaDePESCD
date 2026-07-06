@@ -6,7 +6,6 @@ import br.dsw.pescd.domain.Professor;
 import br.dsw.pescd.domain.Secretario;
 import br.dsw.pescd.domain.Usuario;
 import br.dsw.pescd.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +14,13 @@ import java.util.List;
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();

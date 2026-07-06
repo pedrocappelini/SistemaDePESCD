@@ -9,7 +9,6 @@ import br.dsw.pescd.enums.StatusAlunoOferta;
 import br.dsw.pescd.repository.AvaliacaoResponsavelRepository;
 import br.dsw.pescd.repository.InscricaoRepository;
 import br.dsw.pescd.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -20,14 +19,19 @@ public class HistoricoService {
 
     private static final int SEMESTRES_MINIMOS = 2;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final InscricaoRepository inscricaoRepository;
+    private final AvaliacaoResponsavelRepository avaliacaoResponsavelRepository;
 
-    @Autowired
-    private InscricaoRepository inscricaoRepository;
-
-    @Autowired
-    private AvaliacaoResponsavelRepository avaliacaoResponsavelRepository;
+    public HistoricoService(
+            UsuarioRepository usuarioRepository,
+            InscricaoRepository inscricaoRepository,
+            AvaliacaoResponsavelRepository avaliacaoResponsavelRepository
+    ) {
+        this.usuarioRepository = usuarioRepository;
+        this.inscricaoRepository = inscricaoRepository;
+        this.avaliacaoResponsavelRepository = avaliacaoResponsavelRepository;
+    }
 
     public List<HistoricoItemDTO> buscarHistoricoDoAluno(String username) {
         Aluno aluno = buscarAluno(username);

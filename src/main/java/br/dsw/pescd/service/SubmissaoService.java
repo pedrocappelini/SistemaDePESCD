@@ -8,7 +8,6 @@ import br.dsw.pescd.repository.PlanoTrabalhoRepository;
 import br.dsw.pescd.repository.ProfessorRepository;
 import br.dsw.pescd.repository.RelatorioFinalRepository;
 import br.dsw.pescd.repository.InscricaoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,26 +16,31 @@ import java.io.IOException;
 @Service
 public class SubmissaoService {
 
-    @Autowired
-    private InscricaoService inscricaoService;
+    private final InscricaoService inscricaoService;
+    private final ArquivoService arquivoService;
+    private final InscricaoRepository inscricaoRepository;
+    private final DocumentacaoRepository documentacaoRepository;
+    private final RelatorioFinalRepository relatorioFinalRepository;
+    private final PlanoTrabalhoRepository planoTrabalhoRepository;
+    private final ProfessorRepository professorRepository;
 
-    @Autowired
-    private ArquivoService arquivoService;
-
-    @Autowired
-    private InscricaoRepository inscricaoRepository;
-
-    @Autowired
-    private DocumentacaoRepository documentacaoRepository;
-
-    @Autowired
-    private RelatorioFinalRepository relatorioFinalRepository;
-
-    @Autowired
-    private PlanoTrabalhoRepository planoTrabalhoRepository;
-
-    @Autowired
-    private ProfessorRepository professorRepository;
+    public SubmissaoService(
+            InscricaoService inscricaoService,
+            ArquivoService arquivoService,
+            InscricaoRepository inscricaoRepository,
+            DocumentacaoRepository documentacaoRepository,
+            RelatorioFinalRepository relatorioFinalRepository,
+            PlanoTrabalhoRepository planoTrabalhoRepository,
+            ProfessorRepository professorRepository
+    ) {
+        this.inscricaoService = inscricaoService;
+        this.arquivoService = arquivoService;
+        this.inscricaoRepository = inscricaoRepository;
+        this.documentacaoRepository = documentacaoRepository;
+        this.relatorioFinalRepository = relatorioFinalRepository;
+        this.planoTrabalhoRepository = planoTrabalhoRepository;
+        this.professorRepository = professorRepository;
+    }
 
     public void enviarDocumentacao(String username, Long ofertaId, String instituicao, String nomeDisciplina,
                                    String cursoDisciplina, Integer cargaHoraria, MultipartFile arquivo) throws IOException {

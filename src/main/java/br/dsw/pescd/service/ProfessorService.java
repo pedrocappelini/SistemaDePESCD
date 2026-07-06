@@ -7,7 +7,6 @@ import br.dsw.pescd.enums.StatusAlunoOferta;
 import br.dsw.pescd.repository.InscricaoRepository;
 import br.dsw.pescd.repository.PlanoTrabalhoRepository;
 import br.dsw.pescd.repository.ProfessorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import br.dsw.pescd.domain.RelatorioFinal;
 import br.dsw.pescd.repository.RelatorioFinalRepository;
@@ -19,17 +18,22 @@ import java.util.List;
 @Service
 public class ProfessorService {
 
-    @Autowired
-    private ProfessorRepository professorRepository;
+    private final ProfessorRepository professorRepository;
+    private final InscricaoRepository inscricaoRepository;
+    private final PlanoTrabalhoRepository planoTrabalhoRepository;
+    private final RelatorioFinalRepository relatorioFinalRepository;
 
-    @Autowired
-    private InscricaoRepository inscricaoRepository;
-
-    @Autowired
-    private PlanoTrabalhoRepository planoTrabalhoRepository;
-
-    @Autowired
-    private RelatorioFinalRepository relatorioFinalRepository;
+    public ProfessorService(
+            ProfessorRepository professorRepository,
+            InscricaoRepository inscricaoRepository,
+            PlanoTrabalhoRepository planoTrabalhoRepository,
+            RelatorioFinalRepository relatorioFinalRepository
+    ) {
+        this.professorRepository = professorRepository;
+        this.inscricaoRepository = inscricaoRepository;
+        this.planoTrabalhoRepository = planoTrabalhoRepository;
+        this.relatorioFinalRepository = relatorioFinalRepository;
+    }
 
     public List<Inscricao> buscarInscricoesDoSupervisor(String username) {
         Professor professor = professorRepository.findByUsername(username);

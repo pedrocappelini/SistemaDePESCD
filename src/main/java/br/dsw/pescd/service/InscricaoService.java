@@ -6,7 +6,6 @@ import br.dsw.pescd.domain.Oferta;
 import br.dsw.pescd.enums.StatusAlunoOferta;
 import br.dsw.pescd.repository.AlunoRepository;
 import br.dsw.pescd.repository.InscricaoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,17 +19,22 @@ import java.util.List;
 @Service
 public class InscricaoService {
 
-    @Autowired
-    private InscricaoRepository inscricaoRepository;
+    private final InscricaoRepository inscricaoRepository;
+    private final AlunoRepository alunoRepository;
+    private final OfertaService ofertaService;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private AlunoRepository alunoRepository;
-
-    @Autowired
-    private OfertaService ofertaService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public InscricaoService(
+            InscricaoRepository inscricaoRepository,
+            AlunoRepository alunoRepository,
+            OfertaService ofertaService,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.inscricaoRepository = inscricaoRepository;
+        this.alunoRepository = alunoRepository;
+        this.ofertaService = ofertaService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public List<Inscricao> buscarInscricoesDoAluno(String username) {
         Aluno aluno = alunoRepository.findByUsername(username);

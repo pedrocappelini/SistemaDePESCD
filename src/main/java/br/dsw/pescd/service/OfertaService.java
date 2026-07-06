@@ -9,7 +9,6 @@ import br.dsw.pescd.repository.InscricaoRepository;
 import br.dsw.pescd.repository.OfertaRepository;
 import br.dsw.pescd.repository.ProfessorRepository;
 import br.dsw.pescd.repository.SecretarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,17 +18,22 @@ import java.util.List;
 @Service
 public class OfertaService {
 
-    @Autowired
-    private OfertaRepository ofertaRepository;
+    private final OfertaRepository ofertaRepository;
+    private final ProfessorRepository professorRepository;
+    private final SecretarioRepository secretarioRepository;
+    private final InscricaoRepository inscricaoRepository;
 
-    @Autowired
-    private ProfessorRepository professorRepository;
-
-    @Autowired
-    private SecretarioRepository secretarioRepository;
-
-    @Autowired
-    private InscricaoRepository inscricaoRepository;
+    public OfertaService(
+            OfertaRepository ofertaRepository,
+            ProfessorRepository professorRepository,
+            SecretarioRepository secretarioRepository,
+            InscricaoRepository inscricaoRepository
+    ) {
+        this.ofertaRepository = ofertaRepository;
+        this.professorRepository = professorRepository;
+        this.secretarioRepository = secretarioRepository;
+        this.inscricaoRepository = inscricaoRepository;
+    }
 
     public void criarOferta(Oferta oferta, Long professorId, String username) {
         if (!oferta.getDataFim().isAfter(oferta.getDataInicio())) {

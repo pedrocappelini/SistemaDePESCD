@@ -10,7 +10,6 @@ import br.dsw.pescd.repository.AvaliacaoResponsavelRepository;
 import br.dsw.pescd.repository.InscricaoRepository;
 import br.dsw.pescd.repository.OfertaRepository;
 import br.dsw.pescd.repository.ProfessorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,17 +19,22 @@ import java.util.List;
 @Service
 public class ProfessorResponsavelService {
 
-    @Autowired
-    private ProfessorRepository professorRepository;
+    private final ProfessorRepository professorRepository;
+    private final InscricaoRepository inscricaoRepository;
+    private final AvaliacaoResponsavelRepository avaliacaoResponsavelRepository;
+    private final OfertaRepository ofertaRepository;
 
-    @Autowired
-    private InscricaoRepository inscricaoRepository;
-
-    @Autowired
-    private AvaliacaoResponsavelRepository avaliacaoResponsavelRepository;
-
-    @Autowired
-    private OfertaRepository ofertaRepository;
+    public ProfessorResponsavelService(
+            ProfessorRepository professorRepository,
+            InscricaoRepository inscricaoRepository,
+            AvaliacaoResponsavelRepository avaliacaoResponsavelRepository,
+            OfertaRepository ofertaRepository
+    ) {
+        this.professorRepository = professorRepository;
+        this.inscricaoRepository = inscricaoRepository;
+        this.avaliacaoResponsavelRepository = avaliacaoResponsavelRepository;
+        this.ofertaRepository = ofertaRepository;
+    }
 
     public List<Inscricao> listarInscricoesDoResponsavel(String username) {
         Professor professor = buscarProfessor(username);
